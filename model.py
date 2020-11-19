@@ -11,10 +11,105 @@ from tqdm import tqdm
 from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder
 from utils import cluster_acc
 
+class GCNModelAE(nn.Module):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+        super(GCNModelAE, self).__init__()
+
+        self.args = args
+        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        # self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        self.dc = InnerDecoder(dropout, act=lambda x: x)
+
+
+    def forward(self, x, adj):
+        z = self.gc1(x,adj)
+        z = self.gc2(z,adj)
+        return self.dc(z),z
+
+
+    def loss(self,pred_adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
+
+        cost = norm * F.binary_cross_entropy_with_logits(pred_adj, labels,pos_weight = pos_weight)
+
+        return cost
+
+    def check_parameters(self):
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                print(name, param.data,param.data.shape)
 
 class GCNModelVAE(nn.Module):
     def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
         super(GCNModelVAE, self).__init__()
+
+        self.args = args
+        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        # self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        self.dc = InnerDecoder(dropout, act=lambda x: x)
+
+
+    def encoder(self, x, adj):
+        hidden1 = self.gc1(x, adj)
+
+        return self.gc2(hidden1, adj), self.gc3(hidden1, adj)
+
+    def decoder(self,mu,logvar):
+
+        z_u = self.reparameterize(mu, logvar)
+
+        return self.dc(z_u)
+
+    def reparameterize(self, mu, logvar):
+        if self.training:
+            std = torch.exp(logvar)
+            eps = torch.randn_like(std)
+            return eps.mul(std).add_(mu)
+        else:
+            return mu
+
+    def forward(self, x, adj):
+
+        mu, logvar = self.encoder(x, adj)
+        z_u = self.reparameterize(mu, logvar)
+        # z_a = self.reparameterize(mu_a,logvar_a)
+        return self.dc(z_u),mu, logvar
+
+
+    def loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
+
+        det=1e-10
+        norm_u = norm
+        pos_weight_u= pos_weight
+
+        L_rec_u=0
+
+        mu, logvar = self.encoder(x, adj)
+        # z_mu, z_sigma2_log = self.encoder(x)
+        for l in range(L):
+
+            pred_adj = self.decoder(mu,logvar)
+
+            cost_u = norm * F.binary_cross_entropy_with_logits(pred_adj, labels ,pos_weight = pos_weight)
+
+            L_rec_u += cost_u
+
+        L_rec_u/=L
+        KLD = -0.5 / n_nodes * torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2),1))
+        return L_rec_u + KLD
+
+
+    def check_parameters(self):
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                print(name, param.data,param.data.shape)
+
+
+class GCNModelVAECD(nn.Module):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+        super(GCNModelVAECD, self).__init__()
 
         self.args = args
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
@@ -30,8 +125,8 @@ class GCNModelVAE(nn.Module):
 
 
         self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
-        self.mu_c=nn.Parameter(torch.randn(args.nClusters,args.hid_dim),requires_grad=True)
-        self.log_sigma2_c=nn.Parameter(torch.randn(args.nClusters,args.hid_dim),requires_grad=True)
+        self.mu_c=nn.Parameter(torch.randn(args.nClusters,hidden_dim2),requires_grad=True)
+        self.log_sigma2_c=nn.Parameter(torch.randn(args.nClusters,hidden_dim2),requires_grad=True)
 
     def encoder(self, x, adj):
         hidden1 = self.gc1(x, adj)
@@ -62,16 +157,17 @@ class GCNModelVAE(nn.Module):
         return self.dc(z_u),mu, logvar
 
 
-    def ELBO_loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
+    def loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
 
         det=1e-10
-        labels_sub_u = labels
         norm_u = norm
         pos_weight_u= pos_weight
 
         L_rec_u=0
 
         mu, logvar = self.encoder(x, adj)
+        hidden_dim2 = mu.shape[1]
+
         # z_mu, z_sigma2_log = self.encoder(x)
         for l in range(L):
 
@@ -80,7 +176,7 @@ class GCNModelVAE(nn.Module):
             # L_rec+=F.binary_cross_entropy(x_pro,x)
 
             # cost_u = norm * F.binary_cross_entropy_with_logits(pred_adj, labels_sub_u,pos_weight = pos_weight)
-            cost_u = norm * F.binary_cross_entropy_with_logits(pred_adj, labels_sub_u,pos_weight = pos_weight)
+            cost_u = norm * F.binary_cross_entropy_with_logits(pred_adj, labels ,pos_weight = pos_weight)
             # cost_a = norm_a * F.binary_cross_entropy_with_logits(pred_x, labels_sub_a, pos_weight = pos_weight_a)
             # cost_a =torch.Tensor(1).fill_(0)
 
@@ -114,9 +210,9 @@ class GCNModelVAE(nn.Module):
         (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
         # KLD_u_c-= (0.5/n_nodes)*torch.mean(torch.sum(1+2*logvar,1))
-        yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
+        yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
 
-        return L_rec_u,KLD_u_c,yita_loss
+        return L_rec_u+KLD_u_c+yita_loss
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
         '''
