@@ -25,7 +25,7 @@ class GCNModelAE(nn.Module):
     def forward(self, x, adj):
         z = self.gc1(x,adj)
         z = self.gc2(z,adj)
-        return self.dc(z),z
+        return self.dc(z),z,None
 
 
     def loss(self,pred_adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
@@ -97,6 +97,7 @@ class GCNModelVAE(nn.Module):
             L_rec_u += cost_u
 
         L_rec_u/=L
+
         KLD = -0.5 / n_nodes * torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2),1))
         return L_rec_u + KLD
 
