@@ -22,22 +22,22 @@ warnings.simplefilter("ignore")
 def training(args):
 
     print("Using {} dataset".format(args.dataset_str))
-    adj, features, Y= load_AN(args.dataset_str)
-    print("imported graph edge number:{}".format(adj.sum()))
-    # adj, features = load_data(args.dataset_str)
+    adj_init, features, Y= load_AN(args.dataset_str)
+    print("imported graph edge number:{}".format(adj_init.sum()))
+    assert adj_init.diagonal().sum()==0,"adj diagonal sum should be 0"
     n_nodes, n_features= features.shape
 
     args.nClusters=len(set(Y))
     # args.nClusters=1
     print("cluster number:{}".format(args.nClusters))
-    assert(adj.shape[0]==n_nodes)
+    assert(adj_init.shape[0]==n_nodes)
 
     print("node size:{}, feature size:{}".format(n_nodes,n_features))
 
 
-    adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj)
+    # adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj_init)
 
-    print("graph edge number after mask:{}".format(adj.sum()))
+    # print("graph edge number after mask:{}".format(adj_init.sum()))
 
 
 
@@ -49,11 +49,12 @@ def training(args):
     embedding_attr_var_result_file = "result/AGAE_{}_a_sig.emb".format(args.dataset_str)
 
     # Some preprocessing, get the support matrix, D^{-1/2}\hat{A}D^{-1/2}
-    adj_norm = preprocess_graph(adj)
-    print("graph edge number after normalize adjacent matrix:{}".format(adj.sum()))
+    adj_norm = preprocess_graph(adj_init)
+    print("graph edge number after normalize adjacent matrix:{}".format(adj_init.sum()))
 
-    pos_weight_u = torch.tensor(float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()) #??
-    norm_u = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2) #??
+    pos_weight_u = torch.tensor(float(adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) / adj_init.sum()) #??
+    norm_u = adj_init.shape[0] * adj_init.shape[0] / float((adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) * 2) #??
+    # norm_u = 1
 
 
     features_training = sparse_mx_to_torch_sparse_tensor(features)
@@ -61,7 +62,7 @@ def training(args):
     #clustering pretraining for GMM paramter initialization
     writer=SummaryWriter('./logs')
 
-    adj_label = torch.FloatTensor(adj.toarray()+sp.eye(adj.shape[0])) # add the identity matrix to the adj as label
+    adj_label = torch.FloatTensor(adj_init.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
 
     mean_h=[]
     mean_c=[]
