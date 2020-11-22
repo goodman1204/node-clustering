@@ -55,7 +55,8 @@ def training(args):
     pos_weight_u = torch.tensor(float(adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) / adj_init.sum()) #??
     norm_u = adj_init.shape[0] * adj_init.shape[0] / float((adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) * 2) #??
     # norm_u = 1
-
+	pos_weight_a = torch.tensor(float(features[2][0] * features[2][1] - len(features[1])) / len(features[1]))
+	norm_a = features[2][0] * features[2][1] / float((features[2][0] * features[2][1] - len(features[1])) * 2)
 
     features_training = sparse_mx_to_torch_sparse_tensor(features)
 
@@ -63,6 +64,7 @@ def training(args):
     writer=SummaryWriter('./logs')
 
     adj_label = torch.FloatTensor(adj_init.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
+	features_label = features
 
     mean_h=[]
     mean_c=[]
@@ -81,6 +83,9 @@ def training(args):
             model = GCNModelVAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
         elif args.model == 'gcn_vaecd':
             model = GCNModelVAECD(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+		elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
+            model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+
             # using GMM to pretrain the  clustering parameters
             # model.pre_train(features_training,adj_norm,Y,pre_epoch=20)
 
@@ -109,6 +114,8 @@ def training(args):
             elif args.model == 'gcn_vae':
                 recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
                 loss = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+			elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
+				loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
 
             optimizer.zero_grad()
             loss.backward()
