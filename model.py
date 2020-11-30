@@ -30,7 +30,7 @@ class GCNModelAE(nn.Module):
     def loss(self,pred_adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
 
         cost = norm * F.binary_cross_entropy_with_logits(pred_adj, labels,pos_weight = pos_weight)
-        return cost
+        return cost,
 
     def check_parameters(self):
         for name, param in self.named_parameters():
@@ -96,7 +96,7 @@ class GCNModelVAE(nn.Module):
         L_rec_u/=L
 
         KLD = -0.5 / n_nodes * torch.mean(torch.sum(1 + 2 * logvar - mu.pow(2) - logvar.exp().pow(2),1))
-        return L_rec_u + KLD
+        return L_rec_u, KLD
 
 
     def check_parameters(self):
@@ -210,7 +210,7 @@ class GCNModelVAECD(nn.Module):
         # KLD_u_c-= (0.5/n_nodes)*torch.mean(torch.sum(1+2*logvar,1))
         yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
 
-        return L_rec_u+KLD_u_c+yita_loss
+        return L_rec_u,KLD_u_c,yita_loss
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
         '''
@@ -385,7 +385,8 @@ class GCNModelVAECE(nn.Module):
         L_rec_a/=L
 
         # z_a = self.reparameterize(mu_a,logvar_a)
-        KLD_a = (0.5 / n_features) * torch.mean(torch.sum(-1 - 2 * logvar_a + mu_a.pow(2) + logvar_a.exp().pow(2), 1))
+        # KLD_a = (0.5 / n_features) * torch.mean(torch.sum(-1 - 2 * logvar_a + mu_a.pow(2) + logvar_a.exp().pow(2), 1))
+        KLD_a = -(0.5 / n_features) * torch.mean(torch.sum(-1 - 2 * logvar_a + mu_a.pow(2) + logvar_a.exp().pow(2), 1))
         # KLD_a =torch.Tensor(1).fill_(0)
 
         # Loss=L_rec*x.size(1)
@@ -403,7 +404,7 @@ class GCNModelVAECE(nn.Module):
         yita_c=yita_c/(yita_c.sum(1).view(-1,1))#batch_size*Clusters
         # yita_c=F.softmax(yita_c)
 
-        KLD_u_c=(0.5/n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
+        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
             torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
             (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
@@ -413,12 +414,13 @@ class GCNModelVAECE(nn.Module):
 
         # mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
-        yita_loss=(1/self.args.nClusters)*torch.mean(torch.sum(yita_c*torch.log(yita_c),1))
+        yita_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(yita_c*torch.log(yita_c),1))
         # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
         # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
-        return L_rec_u + L_rec_a + KLD_u_c + KLD_a + yita_loss
+        return L_rec_u , L_rec_a , KLD_u_c , KLD_a , yita_loss
+        # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + yita_loss
 
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
