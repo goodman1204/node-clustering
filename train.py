@@ -84,154 +84,154 @@ def training(args):
 
     for r in range(args.num_run):
 
-            model = None
-            if args.model == 'gcn_ae':
-                    model = GCNModelAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = None
+        if args.model == 'gcn_ae':
+                model = GCNModelAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        elif args.model == 'gcn_vae':
+                model = GCNModelVAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        elif args.model == 'gcn_vaecd':
+                model = GCNModelVAECD(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
+                model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+
+                # using GMM to pretrain the  clustering parameters
+                # model.pre_train(features_training,adj_norm,Y,pre_epoch=20)
+
+        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+
+
+        hidden_emb_u = None
+        hidden_emb_a = None
+
+        cost_val = []
+        acc_val = []
+        val_roc_score = []
+        # lr_s=StepLR(optimizer,step_size=10,gamma=0.95)
+
+        loss_list=None
+        for epoch in range(args.epochs):
+            t = time.time()
+            model.train()
+
+            if args.model =='gcn_vaecd':
+                    recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+                    loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                    loss =sum(loss_list)
+
+            elif args.model == 'gcn_ae':
+                    recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
+                    loss_list = model.loss(recovered_u,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                    loss =sum(loss_list)
             elif args.model == 'gcn_vae':
-                    model = GCNModelVAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
-            elif args.model == 'gcn_vaecd':
-                    model = GCNModelVAECD(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+                    recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+                    loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                    loss =sum(loss_list)
             elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-                    model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+                    (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+                    # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                    loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                    loss =sum(loss_list)
+                    # loss = loss_list[0]+loss_list[2]+loss_list[4]
 
-                    # using GMM to pretrain the  clustering parameters
-                    # model.pre_train(features_training,adj_norm,Y,pre_epoch=20)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-            optimizer = optim.Adam(model.parameters(), lr=args.lr)
+            # lr_s.step()
 
+            # model.check_parameters()
 
-            hidden_emb_u = None
-            hidden_emb_a = None
+            correct_prediction_u = ((torch.sigmoid(recovered_u)>=0.5)==adj_label.type(torch.LongTensor))
+            # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
 
-            cost_val = []
-            acc_val = []
-            val_roc_score = []
-            # lr_s=StepLR(optimizer,step_size=10,gamma=0.95)
+            accuracy = torch.mean(correct_prediction_u*1.0)
 
-            loss_list=None
-            for epoch in range(args.epochs):
-                    t = time.time()
-                    model.train()
+            # hidden_emb_u = mu_u.data.numpy()
+            # hidden_emb_a = mu_a.data.numpy()
+            # roc_curr, ap_curr = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, val_edges, val_edges_false)
+            # roc_curr_a, ap_curr_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, val_feas, val_feas_false)
 
-                    if args.model =='gcn_vaecd':
-                            recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                            loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                            loss =sum(loss_list)
+            # val_roc_score.append(roc_curr)
 
-                    elif args.model == 'gcn_ae':
-                            recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
-                            loss_list = model.loss(recovered_u,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                            loss =sum(loss_list)
-                    elif args.model == 'gcn_vae':
-                            recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                            loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                            loss =sum(loss_list)
-                    elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-                            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-                            # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-                            loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-                            # loss =sum(loss_list)
-                            loss = loss_list[0]+loss_list[2]+loss_list[4]
-
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-
-                    # lr_s.step()
-
-                    # model.check_parameters()
-
-                    correct_prediction_u = ((torch.sigmoid(recovered_u)>=0.5)==adj_label.type(torch.LongTensor))
-                    # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
-
-                    accuracy = torch.mean(correct_prediction_u*1.0)
-
-                    # hidden_emb_u = mu_u.data.numpy()
-                    # hidden_emb_a = mu_a.data.numpy()
-                    # roc_curr, ap_curr = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, val_edges, val_edges_false)
-                    # roc_curr_a, ap_curr_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, val_feas, val_feas_false)
-
-                    # val_roc_score.append(roc_curr)
-
-                    #clustering#############
-                    pre=[]
-                    tru=[]
+            #clustering#############
+            pre=[]
+            tru=[]
 
 
-                    tru=Y
-                    model.eval()
+            tru=Y
+            model.eval()
 
-                    # if args.model == 'vgaecd':
-                            # pre=model.predict(mu_u,logvar_u)
+            # if args.model == 'vgaecd':
+                    # pre=model.predict(mu_u,logvar_u)
 
-                            # print("True label:{}".format(tru))
-                            # print(Counter(tru))
-                            # print("Predicted label:{}".format(pre))
-                            # print(Counter(pre))
+                    # print("True label:{}".format(tru))
+                    # print(Counter(tru))
+                    # print("Predicted label:{}".format(pre))
+                    # print(Counter(pre))
 
-                            # # mc_
-                            # print("cluster means")
-                            # print(model.mu_c.data)
+                    # # mc_
+                    # print("cluster means")
+                    # print(model.mu_c.data)
 
-                            # print("cluster prior")
-                            # print(model.pi_.data)
-                    # else:
-                            # pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+                    # print("cluster prior")
+                    # print(model.pi_.data)
+            # else:
+                    # pre=clustering_latent_space(mu_u.detach().numpy(),tru)
 
-                    # writer.add_scalar('loss',loss.item(),epoch)
-                    # writer.add_scalar('acc',cluster_acc(pre,tru)[0]*100,epoch)
-                    # writer.add_scalar('lr',lr_s.get_last_lr()[0],epoch)
+            # writer.add_scalar('loss',loss.item(),epoch)
+            # writer.add_scalar('acc',cluster_acc(pre,tru)[0]*100,epoch)
+            # writer.add_scalar('lr',lr_s.get_last_lr()[0],epoch)
 
-                    # print('Loss={:.4f},Clustering_ACC={:.4f}%,LR={:.4f}'.format(loss.item(),cluster_acc(pre,tru)[0]*100,lr_s.get_last_lr()[0]))
-                    # H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
-                    # print('H:{} C:{} V:{} ari:{} ami:{} nmi:{} purity:{}'.format(H, C, V, ari, ami, nmi, purity))
+            # print('Loss={:.4f},Clustering_ACC={:.4f}%,LR={:.4f}'.format(loss.item(),cluster_acc(pre,tru)[0]*100,lr_s.get_last_lr()[0]))
+            # H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
+            # print('H:{} C:{} V:{} ari:{} ami:{} nmi:{} purity:{}'.format(H, C, V, ari, ami, nmi, purity))
 
-                    #######################
-
-
-                    print("Epoch:", '%04d' % (epoch + 1),
-                              # "train_loss=", "{:.5f}".format(loss.item()),
-                              "train_loss_list=", "{}".format([round(l.item(),4) for l in loss_list]),
-                              # "log_lik=", "{:.5f}".format(cost.item()),
-                              # "KL_u=", "{:.5f}".format(KLD_u.item()),
-                              # "KL_a=", "{:.5f}".format(KLD_a.item()),
-                              # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                              "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
-                              # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
-                              # "val_edge_ap=", "{:.5f}".format(ap_curr),
-                              # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
-                              # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                              "time=", "{:.5f}".format(time.time() - t))
-
-            print("Optimization Finished!")
-            if args.model == 'gcn_vaece':
-                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-            else:
-                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+            #######################
 
 
-            pre=clustering_latent_space(mu_u.detach().numpy(),tru)
-            H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
-            mean_h.append(round(H,4))
-            mean_c.append(round(C,4))
-            mean_v.append(round(V,4))
-            mean_ari.append(round(ari,4))
-            mean_ami.append(round(ami,4))
-            mean_nmi.append(round(nmi,4))
-            mean_purity.append(round(purity,4))
+            print("Epoch:", '%04d' % (epoch + 1),
+                      "train_loss_total=", "{:.5f}".format(loss.item()),
+                      "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
+                      # "log_lik=", "{:.5f}".format(cost.item()),
+                      # "KL_u=", "{:.5f}".format(KLD_u.item()),
+                      # "KL_a=", "{:.5f}".format(KLD_a.item()),
+                      # "yita_loss=", "{:.5f}".format(yita_loss.item()),
+                      "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
+                      # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
+                      # "val_edge_ap=", "{:.5f}".format(ap_curr),
+                      # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
+                      # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
+                      "time=", "{:.5f}".format(time.time() - t))
 
-            # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
-            # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
-            # np.save(embedding_node_var_result_file, logvar_u.data.numpy())
-            # np.save(embedding_attr_var_result_file, logvar_a.data.numpy())
+        print("Optimization Finished!")
+        if args.model == 'gcn_vaece':
+            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+        else:
+            recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
-            # roc_score, ap_score = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, test_edges, test_edges_false)
-            # roc_score_a, ap_score_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, test_feas, test_feas_false)
 
-            # print('Test edge ROC score: ' + str(roc_score))
-            # print('Test edge AP score: ' + str(ap_score))
-            # print('Test attr ROC score: ' + str(roc_score_a))
-            # print('Test attr AP score: ' + str(ap_score_a))
+        pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+        H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
+        mean_h.append(round(H,4))
+        mean_c.append(round(C,4))
+        mean_v.append(round(V,4))
+        mean_ari.append(round(ari,4))
+        mean_ami.append(round(ami,4))
+        mean_nmi.append(round(nmi,4))
+        mean_purity.append(round(purity,4))
+
+        # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
+        # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
+        # np.save(embedding_node_var_result_file, logvar_u.data.numpy())
+        # np.save(embedding_attr_var_result_file, logvar_a.data.numpy())
+
+        # roc_score, ap_score = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, test_edges, test_edges_false)
+        # roc_score_a, ap_score_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, test_feas, test_feas_false)
+
+        # print('Test edge ROC score: ' + str(roc_score))
+        # print('Test edge AP score: ' + str(ap_score))
+        # print('Test attr ROC score: ' + str(roc_score_a))
+        # print('Test attr AP score: ' + str(ap_score_a))
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
     print('Completeness:{}\t mean:{}\t std:{}\n'.format(mean_c,round(np.mean(mean_c),4),round(np.std(mean_c),4)))
