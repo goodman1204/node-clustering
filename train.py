@@ -130,7 +130,8 @@ def training(args):
                             (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
                             # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
                             loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-                            loss =sum(loss_list)
+                            # loss =sum(loss_list)
+                            loss = loss_list[0]+loss_list[2]+loss_list[4]
 
                     optimizer.zero_grad()
                     loss.backward()

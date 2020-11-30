@@ -199,18 +199,24 @@ class GCNModelVAECD(nn.Module):
         z = self.reparameterize(mu,logvar)
 
         yita_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        yita_c = F.softmax(yita_c)
+        # yita_c = F.softmax(yita_c) # is softmax a good way?
 
-        # yita_c=yita_c/(yita_c.sum(1).view(-1,1)) #shape: batch_size*Clusters
+        yita_c=yita_c/(yita_c.sum(1).view(-1,1)) #shape: batch_size*Clusters
 
-        KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
-            torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
-            (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+        # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
+            # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
+            # (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
         # KLD_u_c-= (0.5/n_nodes)*torch.mean(torch.sum(1+2*logvar,1))
-        yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
+        # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
 
-        return L_rec_u,KLD_u_c,yita_loss
+        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
+            torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
+            (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+
+        yita_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1))
+
+        return L_rec_u,-KLD_u_c,-yita_loss
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
         '''
@@ -392,7 +398,7 @@ class GCNModelVAECE(nn.Module):
         # Loss=L_rec*x.size(1)
 
 
-        # self.pi_.data = (self.pi_/self.pi_.sum()).data
+        self.pi_.data = (self.pi_/self.pi_.sum()).data
         # log_sigma2_c=self.log_sigma2_c
         # mu_c=self.mu_c
 
@@ -414,12 +420,13 @@ class GCNModelVAECE(nn.Module):
 
         # mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
-        yita_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(yita_c*torch.log(yita_c),1))
+        # yita_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(yita_c*torch.log(yita_c),1))
         # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
+        yita_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1))
         # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
-        return L_rec_u , L_rec_a , KLD_u_c , KLD_a , yita_loss
+        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -yita_loss
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + yita_loss
 
 
