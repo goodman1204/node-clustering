@@ -79,13 +79,16 @@ class Linear(Module):
         self.sparse_inputs = sparse_inputs
 
         self.weight= Parameter(torch.FloatTensor(in_features,out_features))
-        self.reset_parameters()
 
         if self.bias:
-            self.weight_bias  = Parameter(torch.FloatTensor(torch.zeros(out_features)))
+            self.weight_bias  = Parameter(torch.FloatTensor(1,out_features))
+
+        self.reset_parameters()
 
     def reset_parameters(self):
         torch.nn.init.xavier_uniform_(self.weight)
+        if self.bias:
+            torch.nn.init.xavier_uniform_(self.weight_bias)
 
     def forward(self,input):
         if self.sparse_inputs:
@@ -94,7 +97,8 @@ class Linear(Module):
             output = torch.mm(input,self.weight)
 
         if self.bias:
-            output += self.bias
+            output += self.weight_bias #Find the bug, self.bias should be self.weight_bias
+            # output += self.bias #Find the bug, self.bias should be self.weight_bias
 
         return self.act(output)
 

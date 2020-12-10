@@ -9,23 +9,32 @@ import torch
 from torch import optim
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import load_data, preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation
-from preprocessing import mask_test_feas,mask_test_edges, load_AN
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation
+from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 from evaluation import clustering_latent_space
 from collections import Counter
+import itertools
 
 import warnings
 warnings.simplefilter("ignore")
 
 def training(args):
 
-    print("Using {} dataset".format(args.dataset_str))
-    adj_init, features, Y= load_AN(args.dataset_str)
-    print("imported graph edge number:{}".format(adj_init.sum()))
-    assert adj_init.diagonal().sum()==0,"adj diagonal sum should be 0"
+    print("Using {} dataset".format(args.dataset))
+    # adj_init, features, Y= load_AN(args.dataset)
+    adj_init, features, labels, idx_train, idx_val, idx_test = load_data(args.dataset)
+    Y = np.argmax(labels,1) # labels is in one-hot format
+
+    # Store original adjacency matrix (without diagonal entries) for later
+    adj_init = adj_init- sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
+    adj_init.eliminate_zeros()
+
+    assert adj_init.diagonal().sum()==0,"adj diagonal sum:{}, should be 0".format(adj_init.diagonal().sum())
     n_nodes, n_features= features.shape
+    # assert check_symmetric(adj_init).sum()==n_nodes*n_nodes,"adj should be symmetric"
+    print("imported graph edge number (without selfloop):{}".format((adj_init-adj_init.diagonal()).sum()/2))
 
 
     args.nClusters=len(set(Y))
@@ -47,20 +56,20 @@ def training(args):
 
     features_nonzero = features[1].shape[0]
 
-    # print("graph edge number after mask:{}".format(adj_init.sum()))
+    print("graph edge number after mask:{}".format(adj_init.sum()/2))
 
 
 
     # save result to files
-    link_predic_result_file = "result/AGAE_{}.res".format(args.dataset_str)
-    embedding_node_mean_result_file = "result/AGAE_{}_n_mu.emb".format(args.dataset_str)
-    embedding_attr_mean_result_file = "result/AGAE_{}_a_mu.emb".format(args.dataset_str)
-    embedding_node_var_result_file = "result/AGAE_{}_n_sig.emb".format(args.dataset_str)
-    embedding_attr_var_result_file = "result/AGAE_{}_a_sig.emb".format(args.dataset_str)
+    link_predic_result_file = "result/AGAE_{}.res".format(args.dataset)
+    embedding_node_mean_result_file = "result/AGAE_{}_n_mu.emb".format(args.dataset)
+    embedding_attr_mean_result_file = "result/AGAE_{}_a_mu.emb".format(args.dataset)
+    embedding_node_var_result_file = "result/AGAE_{}_n_sig.emb".format(args.dataset)
+    embedding_attr_var_result_file = "result/AGAE_{}_a_sig.emb".format(args.dataset)
 
     # Some preprocessing, get the support matrix, D^{-1/2}\hat{A}D^{-1/2}
     adj_norm = preprocess_graph(adj_init)
-    print("graph edge number after normalize adjacent matrix:{}".format(adj_init.sum()))
+    print("graph edge number after normalize adjacent matrix:{}".format(adj_init.sum()/2))
 
     pos_weight_u = torch.tensor(float(adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) / adj_init.sum()) #??
     norm_u = adj_init.shape[0] * adj_init.shape[0] / float((adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) * 2) #??
@@ -70,7 +79,7 @@ def training(args):
     features_training = sparse_mx_to_torch_sparse_tensor(features_orig)
 
     #clustering pretraining for GMM paramter initialization
-    writer=SummaryWriter('./logs')
+    # writer=SummaryWriter('./logs')
 
     adj_label = torch.FloatTensor(adj_init.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
 
@@ -81,6 +90,9 @@ def training(args):
     mean_ami=[]
     mean_nmi=[]
     mean_purity=[]
+    mean_accuracy=[]
+
+
 
     for r in range(args.num_run):
 
@@ -97,7 +109,23 @@ def training(args):
                 # using GMM to pretrain the  clustering parameters
                 # model.pre_train(features_training,adj_norm,Y,pre_epoch=20)
 
-        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+
+        print([i for i in model.named_parameters()])
+
+
+        if args.model == 'gcn_vaecd':
+            params1=[model.gc1.parameters(),model.gc2.parameters(),model.gc3.parameters(),model.dc.parameters()]
+            optimizer1 = optim.Adam(itertools.chain(*params1), lr=args.lr)
+        elif args.model == 'gcn_vaece':
+            params1=[model.gc1.parameters(),model.gc2.parameters(),model.gc3.parameters(),model.dc.parameters(),model.linear_a1.parameters(),model.linear_a2.parameters(),model.linear_a3.parameters()]
+            optimizer1 = optim.Adam(itertools.chain(*params1), lr=args.lr)
+        else:
+
+        optimizer2 = optim.Adam(model.parameters(), lr=args.lr)
+        # optimizer2 = optim.Adam([model.parameters()], lr=args.lr)
+
+        # params2=[model.pi_,model.mu_c,model.log_sigma2_c]
+        # optimizer2 = optim.Adam(itertools.chain(*params2), lr=args.lr)
 
 
         hidden_emb_u = None
@@ -106,7 +134,7 @@ def training(args):
         cost_val = []
         acc_val = []
         val_roc_score = []
-        # lr_s=StepLR(optimizer,step_size=10,gamma=0.95)
+        lr_s=StepLR(optimizer1,step_size=30,gamma=1) # it seems that fix leanring rate is better
 
         loss_list=None
         for epoch in range(args.epochs):
@@ -114,32 +142,63 @@ def training(args):
             model.train()
 
             if args.model =='gcn_vaecd':
-                    recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                    loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                    loss =sum(loss_list)
+                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+                loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                loss =sum(loss_list)
 
             elif args.model == 'gcn_ae':
-                    recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
-                    loss_list = model.loss(recovered_u,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                    loss =sum(loss_list)
+                recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
+                loss_list = model.loss(recovered_u,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                loss =sum(loss_list)
             elif args.model == 'gcn_vae':
-                    recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                    loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                    loss =sum(loss_list)
+                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+                loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+                loss =sum(loss_list)
             elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-                    (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-                    # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-                    loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-                    loss =sum(loss_list)
-                    # loss = loss_list[0]+loss_list[2]+loss_list[4]
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                # if epoch %50==0:
+                    # for name, param in model.named_parameters():
+                        # if name in [ 'log_sigma2_c','pi_','mu_c']:
+                            # param.requires_grad=True
+                # else:
+                    # for name, param in model.named_parameters():
+                        # if name in [ 'log_sigma2_c','pi_','mu_c']:
+                            # param.requires_grad=False
 
-            # lr_s.step()
 
-            # model.check_parameters()
+                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+                # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                loss =sum(loss_list)
+                # loss = loss_list[0]+loss_list[1]+60*loss_list[2]+loss_list[3]+loss_list[4]+loss_list[5]
+                # if epoch%2==0:
+                    # loss = loss_list[0]+loss_list[1]
+                # else:
+                    # loss = loss_list[2]+loss_list[3]+loss_list[4]
+
+            # if not epoch%10==0:
+                # optimizer1.zero_grad()
+                # loss.backward()
+                # optimizer1.step()
+            # else:
+                # optimizer2.zero_grad()
+                # loss.backward()
+                # optimizer2.step()
+
+                if epoch <20 and args.model in ['gcn_vaece','gcn_vaecd']:
+                    optimizer1.zero_grad()
+                    loss.backward()
+                    optimizer1.step()
+                else:
+                    optimizer2.zero_grad()
+                    loss.backward()
+                    optimizer2.step()
+
+
+
+            lr_s.step()
+
+            model.check_parameters()
 
             correct_prediction_u = ((torch.sigmoid(recovered_u)>=0.5)==adj_label.type(torch.LongTensor))
             # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
@@ -156,6 +215,7 @@ def training(args):
             #clustering#############
             pre=[]
             tru=[]
+            gamma = None
 
 
             tru=Y
@@ -190,18 +250,19 @@ def training(args):
 
 
             print("Epoch:", '%04d' % (epoch + 1),
-                      "train_loss_total=", "{:.5f}".format(loss.item()),
-                      "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
-                      # "log_lik=", "{:.5f}".format(cost.item()),
-                      # "KL_u=", "{:.5f}".format(KLD_u.item()),
-                      # "KL_a=", "{:.5f}".format(KLD_a.item()),
-                      # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                      "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
-                      # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
-                      # "val_edge_ap=", "{:.5f}".format(ap_curr),
-                      # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
-                      # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                      "time=", "{:.5f}".format(time.time() - t))
+                "LR={:.4f}".format(lr_s.get_last_lr()[0]),
+                  "train_loss_total=", "{:.5f}".format(loss.item()),
+                  "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
+                  # "log_lik=", "{:.5f}".format(cost.item()),
+                  # "KL_u=", "{:.5f}".format(KLD_u.item()),
+                  # "KL_a=", "{:.5f}".format(KLD_a.item()),
+                  # "yita_loss=", "{:.5f}".format(yita_loss.item()),
+                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
+                  # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
+                  # "val_edge_ap=", "{:.5f}".format(ap_curr),
+                  # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
+                  # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
+                  "time=", "{:.5f}".format(time.time() - t))
 
         print("Optimization Finished!")
         if args.model == 'gcn_vaece':
@@ -210,8 +271,14 @@ def training(args):
             recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
 
-        pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+        if args.model in ['gcn_vaecd','gcn_vaece']:
+            pre,gamma = model.predict(mu_u,logvar_u)
+            print("gamma:\n{}".format(gamma))
+        else:
+            pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+
         H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
+        acc = cluster_acc(pre,tru)[0]*100
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
         mean_v.append(round(V,4))
@@ -219,6 +286,8 @@ def training(args):
         mean_ami.append(round(ami,4))
         mean_nmi.append(round(nmi,4))
         mean_purity.append(round(purity,4))
+        mean_accuracy.append(round(acc,4))
+
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
         # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
@@ -240,23 +309,28 @@ def training(args):
     print('adjusted Mutual Information:{}\t mean:{}\t std:{}\n'.format(mean_ami,round(np.mean(mean_ami),4),round(np.std(mean_ami),4)))
     print('Normalized Mutual Information:{}\t mean:{}\t std:{}\n'.format(mean_nmi,round(np.mean(mean_nmi),4),round(np.std(mean_nmi),4)))
     print('Purity:{}\t mean:{}\t std:{}\n'.format(mean_purity,round(np.mean(mean_purity),4),round(np.std(mean_purity),4)))
+    print('Accuracy:{}\t mean:{}\t std:{}\n'.format(mean_accuracy,round(np.mean(mean_accuracy),4),round(np.std(mean_accuracy),4)))
+    print("True label distribution:{}".format(tru))
+    print(Counter(tru))
+    print("Predicted label distribution:{}".format(pre))
+    print(Counter(pre))
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-    parser.add_argument('--epochs', type=int, default=200, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
-    parser.add_argument('--lr', type=float, default=0.001, help='Initial learning rate.')
+    parser.add_argument('--epochs', type=int, default=500, help='Number of epochs to train.')
+    parser.add_argument('--hidden1', type=int, default=100, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=100, help='Number of units in hidden layer 2.')
+    parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0., help='Dropout rate (1 - keep probability).')
-    parser.add_argument('--dataset-str', type=str, default='cora', help='type of dataset.')
+    parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     return args
 
 if __name__ == '__main__':
-        args = parse_args()
-        training(args)
+    args = parse_args()
+    training(args)

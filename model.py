@@ -11,6 +11,9 @@ from tqdm import tqdm
 from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder
 from utils import cluster_acc
 
+from utils_smiles import *
+from estimators import estimate_mutual_information
+
 class GCNModelAE(nn.Module):
     def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
         super(GCNModelAE, self).__init__()
@@ -191,32 +194,33 @@ class GCNModelVAECD(nn.Module):
         # Loss=L_rec*x.size(1)
 
 
-        self.pi_.data = (self.pi_/self.pi_.sum()).data
+        # self.pi_.data = (self.pi_/self.pi_.sum()).data
         # log_sigma2_c=self.log_sigma2_c
         # mu_c=self.mu_c
 
         # z = torch.randn_like(z_mu) * torch.exp(z_sigma2_log / 2) + z_mu
         z = self.reparameterize(mu,logvar)
 
-        yita_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        # yita_c = F.softmax(yita_c) # is softmax a good way?
+        gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        # gamma_c = F.softmax(gamma_c) # is softmax a good way?
 
-        yita_c=yita_c/(yita_c.sum(1).view(-1,1)) #shape: batch_size*Clusters
+        gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1)) #shape: batch_size*Clusters
+        self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
-        # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
+        # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
             # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
             # (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
         # KLD_u_c-= (0.5/n_nodes)*torch.mean(torch.sum(1+2*logvar,1))
-        # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
+        # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / hidden_dim2)*torch.mean(torch.sum(1+2*logvar,1))
 
-        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
+        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
             torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
             (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
-        yita_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1))
+        gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
 
-        return L_rec_u,-KLD_u_c,-yita_loss
+        return L_rec_u,-KLD_u_c,-gamma_loss
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
         '''
@@ -285,11 +289,11 @@ class GCNModelVAECD(nn.Module):
         pi = self.pi_
         log_sigma2_c = self.log_sigma2_c
         mu_c = self.mu_c
-        yita_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
+        gamma_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
 
-        yita=yita_c.detach().cpu().numpy()
+        gamma=gamma_c.detach().cpu().numpy()
 
-        return np.argmax(yita,axis=1)
+        return np.argmax(gamma,axis=1),gamma
 
 
     def gaussian_pdfs_log(self,x,mus,log_sigma2s):
@@ -312,6 +316,7 @@ class GCNModelVAECE(nn.Module):
     def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
         super(GCNModelVAECE, self).__init__()
 
+
         self.args = args
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
@@ -326,8 +331,14 @@ class GCNModelVAECE(nn.Module):
 
 
         self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
-        self.mu_c=nn.Parameter(torch.randn(args.nClusters,hidden_dim2),requires_grad=True)
-        self.log_sigma2_c=nn.Parameter(torch.randn(args.nClusters,hidden_dim2),requires_grad=True)
+        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
+        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
+
+        # calculate mi
+
+        # critic_params = {'dim_x': x.shape[1],'dim_y':y.shape[1],'layers': 2,'embed_dim': 32,'hidden_dim': 64,'activation': 'relu',}
+        # self.critic_structure = ConcatCritic(hidden_dim2,n_nodes,256,3,'relu',rho=None,)
+        # self.critic_feature = ConcatCritic(hidden_dim2,input_feat_dim,256,3,'relu',rho=None,)
 
     def encoder(self, x, adj):
         hidden1 = self.gc1(x, adj)
@@ -362,6 +373,14 @@ class GCNModelVAECE(nn.Module):
         dn = (norm + norm.view(1, -1)) - 2.0 * (x @ x.t())
         return torch.sum(torch.relu(dn).sqrt())
 
+    def mi_loss(self,z,x,a):
+        # critic_params = {'dim_x': x.shape[1],'dim_y':y.shape[1],'layers': 2,'embed_dim': 32,'hidden_dim': 64,'activation': 'relu',}
+        # critic = ConcatCritic(rho=None,**critic_params)
+        indice = torch.randperm(len(z))[0:50]
+        # mi_x = estimate_mutual_information('dv',z[indice],x[indice],self.critic_structure)
+        mi_a = estimate_mutual_information('js',z[indice],a[indice],self.critic_feature)
+        return mi_a
+
     def loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
 
         det=1e-10
@@ -372,8 +391,14 @@ class GCNModelVAECE(nn.Module):
         L_rec_u=0
         L_rec_a=0
 
+        mi=0
+
         mu, logvar, mu_a, logvar_a = self.encoder(x, adj)
+
+        # mutual information loss
+
         # z_mu, z_sigma2_log = self.encoder(x)
+        # mi_a = self.mi_loss(mu,adj.to_dense(),x.to_dense())
         for l in range(L):
 
             # z=torch.randn_like(z_mu)*torch.exp(z_sigma2_log/2)+z_mu
@@ -387,6 +412,7 @@ class GCNModelVAECE(nn.Module):
             L_rec_u += cost_u
             L_rec_a += cost_a
 
+
         L_rec_u/=L
         L_rec_a/=L
 
@@ -398,36 +424,39 @@ class GCNModelVAECE(nn.Module):
         # Loss=L_rec*x.size(1)
 
 
-        self.pi_.data = (self.pi_/self.pi_.sum()).data
         # log_sigma2_c=self.log_sigma2_c
         # mu_c=self.mu_c
 
         # z = torch.randn_like(z_mu) * torch.exp(z_sigma2_log / 2) + z_mu
         z = self.reparameterize(mu,logvar)
 
-        yita_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
 
-        yita_c=yita_c/(yita_c.sum(1).view(-1,1))#batch_size*Clusters
-        # yita_c=F.softmax(yita_c)
+        gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
+        # gamma_c=F.softmax(gamma_c)
 
-        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
+        # self.pi_.data = (self.pi_/self.pi_.sum()).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
+        self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
+
+        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
             torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
             (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
-        # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(yita_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
+        # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
             # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
             # (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
         # mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
-        # yita_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(yita_c*torch.log(yita_c),1))
-        # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
-        yita_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1))
-        # yita_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(yita_c*torch.log(yita_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
+        # gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
+        # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
+        gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
+        # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
-        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -yita_loss
-        # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + yita_loss
+        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss
+        # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
+        # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
 
     def pre_train(self,x,adj,Y,pre_epoch=50):
@@ -498,10 +527,10 @@ class GCNModelVAECE(nn.Module):
         pi = self.pi_
         log_sigma2_c = self.log_sigma2_c
         mu_c = self.mu_c
-        yita_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
+        gamma_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
 
-        yita=yita_c.detach().cpu().numpy()
-        return np.argmax(yita,axis=1)+1
+        gamma=gamma_c.detach().cpu().numpy()
+        return np.argmax(gamma,axis=1),gamma
 
 
     def gaussian_pdfs_log(self,x,mus,log_sigma2s):
@@ -513,7 +542,7 @@ class GCNModelVAECE(nn.Module):
 
     @staticmethod
     def gaussian_pdf_log(x,mu,log_sigma2):
-        return -0.5*(torch.sum(np.log(np.pi*2)+log_sigma2+(x-mu).pow(2)/torch.exp(log_sigma2),1))
+        return -0.5*(torch.sum(np.log(np.pi*2)+log_sigma2+(x-mu).pow(2)/torch.exp(log_sigma2),1)) # np.pi*2, not square
 
     def check_parameters(self):
         for name, param in self.named_parameters():
