@@ -78,7 +78,7 @@ def training(args):
 
     features_training = sparse_mx_to_torch_sparse_tensor(features_orig)
 
-    #clustering pretraining for GMM paramter initialization
+    # clustering pretraining for GMM paramter initialization
     # writer=SummaryWriter('./logs')
 
     adj_label = torch.FloatTensor(adj_init.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
@@ -107,7 +107,6 @@ def training(args):
                 model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
                 # using GMM to pretrain the  clustering parameters
-                # model.pre_train(features_training,adj_norm,Y,pre_epoch=20)
 
 
         print([i for i in model.named_parameters()])
@@ -119,7 +118,8 @@ def training(args):
         elif args.model == 'gcn_vaece':
             params1=[model.gc1.parameters(),model.gc2.parameters(),model.gc3.parameters(),model.dc.parameters(),model.linear_a1.parameters(),model.linear_a2.parameters(),model.linear_a3.parameters()]
             optimizer1 = optim.Adam(itertools.chain(*params1), lr=args.lr)
-        else:
+
+            # model.pre_train(features_training,adj_norm,Y,pre_epoch=50)
 
         optimizer2 = optim.Adam(model.parameters(), lr=args.lr)
         # optimizer2 = optim.Adam([model.parameters()], lr=args.lr)
@@ -185,7 +185,7 @@ def training(args):
                 # loss.backward()
                 # optimizer2.step()
 
-                if epoch <20 and args.model in ['gcn_vaece','gcn_vaecd']:
+                if epoch <-1 and args.model in ['gcn_vaece','gcn_vaecd']:
                     optimizer1.zero_grad()
                     loss.backward()
                     optimizer1.step()
@@ -198,7 +198,14 @@ def training(args):
 
             lr_s.step()
 
+            model.check_gradient()
             model.check_parameters()
+
+            if (epoch+1)%50==0:
+                z = model.reparameterize(mu_u,logvar_u)
+                model.plot_tsne(args.dataset,epoch,z)
+
+
 
             correct_prediction_u = ((torch.sigmoid(recovered_u)>=0.5)==adj_label.type(torch.LongTensor))
             # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
@@ -264,7 +271,11 @@ def training(args):
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
                   "time=", "{:.5f}".format(time.time() - t))
 
+        model.check_parameters()
+        z = model.reparameterize(mu_u,logvar_u)
+        model.plot_tsne(args.dataset,epoch,z)
         print("Optimization Finished!")
+
         if args.model == 'gcn_vaece':
             (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
         else:
@@ -272,7 +283,7 @@ def training(args):
 
 
         if args.model in ['gcn_vaecd','gcn_vaece']:
-            pre,gamma = model.predict(mu_u,logvar_u)
+            pre,gamma = model.predict_dist(mu_u,logvar_u)
             print("gamma:\n{}".format(gamma))
         else:
             pre=clustering_latent_space(mu_u.detach().numpy(),tru)
@@ -301,6 +312,8 @@ def training(args):
         # print('Test edge AP score: ' + str(ap_score))
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
+
+
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
     print('Completeness:{}\t mean:{}\t std:{}\n'.format(mean_c,round(np.mean(mean_c),4),round(np.std(mean_c),4)))
@@ -319,9 +332,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-    parser.add_argument('--epochs', type=int, default=500, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=100, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=100, help='Number of units in hidden layer 2.')
+    parser.add_argument('--epochs', type=int, default=20, help='Number of epochs to train.')
+    parser.add_argument('--hidden1', type=int, default=16, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=8, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0., help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')

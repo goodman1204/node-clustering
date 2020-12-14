@@ -4,6 +4,8 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import accuracy_score
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 from tqdm import tqdm
@@ -232,7 +234,7 @@ class GCNModelVAECD(nn.Module):
         Y: is the class label for each node in graph G.
         '''
 
-        if  not os.path.exists('./pretrain_model_{}.pk'.format(self.args.dataset_str)):
+        if  not os.path.exists('./pretrain_model_{}.pk'.format(self.args.dataset)):
 
             Loss=nn.MSELoss()
             opti=Adam(self.parameters()) #all paramters in model
@@ -277,9 +279,9 @@ class GCNModelVAECD(nn.Module):
             self.mu_c.data = torch.from_numpy(gmm.means_).float()
             self.log_sigma2_c.data = torch.log(torch.from_numpy(gmm.covariances_).float())
 
-            torch.save(self.state_dict(), './pretrain_model_{}.pk'.format(self.args.dataset_str))
+            torch.save(self.state_dict(), './pretrain_model_{}.pk'.format(self.args.dataset))
         else:
-            self.load_state_dict(torch.load('./pretrain_model_{}.pk'.format(self.args.dataset_str)))
+            self.load_state_dict(torch.load('./pretrain_model_{}.pk'.format(self.args.dataset)))
 
     def predict(self,mu, logvar):
         # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
@@ -330,9 +332,12 @@ class GCNModelVAECE(nn.Module):
         self.linear_a3= Linear(hidden_dim1, hidden_dim2, act = lambda x:x)
 
 
-        self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
+        self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=False)
         self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
         self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
+
+        # torch.nn.init.xavier_uniform_(self.mu_c)
+        # torch.nn.init.xavier_uniform_(self.log_sigma2_c)
 
         # calculate mi
 
@@ -432,11 +437,11 @@ class GCNModelVAECE(nn.Module):
 
         gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
 
-        gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
+        # gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
         # gamma_c=F.softmax(gamma_c)
 
         # self.pi_.data = (self.pi_/self.pi_.sum()).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
-        self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
+        # self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
         KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
             torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
@@ -446,7 +451,7 @@ class GCNModelVAECE(nn.Module):
             # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
             # (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
-        # mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
+        mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
         # gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
@@ -469,7 +474,7 @@ class GCNModelVAECE(nn.Module):
         Y: is the class label for each node in graph G.
         '''
 
-        if not os.path.exists('./pretrain_model_{}.pk'.format(self.args.dataset_str)):
+        if not os.path.exists('./pretrain_model_{}.pk'.format(self.args.dataset)):
 
             Loss=nn.MSELoss()
             opti=Adam(self.parameters()) #all paramters in model
@@ -515,9 +520,9 @@ class GCNModelVAECE(nn.Module):
             self.mu_c.data = torch.from_numpy(gmm.means_).float()
             self.log_sigma2_c.data = torch.log(torch.from_numpy(gmm.covariances_).float())
 
-            torch.save(self.state_dict(), './pretrain_model_{}.pk'.format(self.args.dataset_str))
+            torch.save(self.state_dict(), './pretrain_model_{}.pk'.format(self.args.dataset))
         else:
-            self.load_state_dict(torch.load('./pretrain_model_{}.pk'.format(self.args.dataset_str)))
+            self.load_state_dict(torch.load('./pretrain_model_{}.pk'.format(self.args.dataset)))
 
     def predict(self,mu, logvar):
         # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
@@ -532,6 +537,39 @@ class GCNModelVAECE(nn.Module):
         gamma=gamma_c.detach().cpu().numpy()
         return np.argmax(gamma,axis=1),gamma
 
+    def predict_dist(self,mu, logvar):
+        # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
+        # mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
+        # z = torch.randn_like(mu) * torch.exp(z_sigma2_log / 2) + z_mu
+        z  = self.reparameterize(mu,logvar)
+        pi = self.pi_
+        log_sigma2_c = self.log_sigma2_c
+        mu_c = self.mu_c
+        # gamma_c = torch.exp(self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
+
+        # gamma=gamma_c.detach().cpu().numpy()
+
+        gamma=[]
+        for e in range(z.shape[0]):
+            temp_dist=[]
+            for m in range(mu_c.shape[0]):
+                temp_dist.append(F.mse_loss(z[e],mu_c[m]).data)
+            gamma.append(temp_dist)
+
+        return np.argmin(gamma,axis=1),np.array(gamma)
+
+    def plot_tsne(self,dataset,epoch,z):
+        tsne = TSNE(n_components=2, init='pca')
+        zs_tsne = tsne.fit_transform(self.mu_c.detach().numpy())
+
+        fig, ax = plt.subplots()
+        cmap = plt.get_cmap("tab10")
+        ax.scatter(zs_tsne[:, 0], zs_tsne[:, 1],marker='^')
+
+        z = tsne.fit_transform(z.detach().numpy())
+        ax.scatter(z[:, 0], z[:, 1],s=2)
+        # ax.legend()
+        plt.savefig("{}_{}_tsne.pdf".format(dataset,epoch))
 
     def gaussian_pdfs_log(self,x,mus,log_sigma2s):
         G=[]
@@ -548,3 +586,7 @@ class GCNModelVAECE(nn.Module):
         for name, param in self.named_parameters():
             if param.requires_grad:
                 print(name, param.data,param.data.shape)
+    def check_gradient(self):
+        for name, param in self.named_parameters():
+            if param.requires_grad:
+                print('grad: ',name, param.grad,param.grad.shape)
