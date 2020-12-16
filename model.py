@@ -336,8 +336,8 @@ class GCNModelVAECE(nn.Module):
         self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
         self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
 
-        # torch.nn.init.xavier_uniform_(self.mu_c)
-        # torch.nn.init.xavier_uniform_(self.log_sigma2_c)
+        torch.nn.init.xavier_uniform_(self.mu_c)
+        torch.nn.init.xavier_uniform_(self.log_sigma2_c)
 
         # calculate mi
 
