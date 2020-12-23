@@ -6,6 +6,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.metrics import accuracy_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 import os
 from tqdm import tqdm
@@ -15,6 +16,7 @@ from utils import cluster_acc
 
 from utils_smiles import *
 from estimators import estimate_mutual_information
+from collections import Counter
 
 class GCNModelAE(nn.Module):
     def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
@@ -65,12 +67,16 @@ class GCNModelVAE(nn.Module):
         return self.dc(z_u)
 
     def reparameterize(self, mu, logvar):
-        if self.training:
-            std = torch.exp(logvar)
-            eps = torch.randn_like(std)
-            return eps.mul(std).add_(mu)
-        else:
-            return mu
+        std = torch.exp(logvar)
+        eps = torch.randn_like(std)
+        return eps.mul(std).add_(mu)
+
+        # if self.training:
+            # std = torch.exp(logvar)
+            # eps = torch.randn_like(std)
+            # return eps.mul(std).add_(mu)
+        # else:
+            # return mu
 
     def forward(self, x, adj):
 
@@ -196,7 +202,7 @@ class GCNModelVAECD(nn.Module):
         # Loss=L_rec*x.size(1)
 
 
-        # self.pi_.data = (self.pi_/self.pi_.sum()).data
+        self.pi_.data = (self.pi_/self.pi_.sum()).data
         # log_sigma2_c=self.log_sigma2_c
         # mu_c=self.mu_c
 
@@ -332,9 +338,9 @@ class GCNModelVAECE(nn.Module):
         self.linear_a3= Linear(hidden_dim1, hidden_dim2, act = lambda x:x)
 
 
-        self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=False)
-        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
-        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
+        self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
+        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.01),requires_grad=True)
+        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.1),requires_grad=True)
 
         torch.nn.init.xavier_uniform_(self.mu_c)
         torch.nn.init.xavier_uniform_(self.log_sigma2_c)
@@ -435,17 +441,28 @@ class GCNModelVAECE(nn.Module):
         # z = torch.randn_like(z_mu) * torch.exp(z_sigma2_log / 2) + z_mu
         z = self.reparameterize(mu,logvar)
 
-        gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        # gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        # print('gamma_c:',gamma_c)
 
-        # gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
+        gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
         # gamma_c=F.softmax(gamma_c)
+        # print('gamma_c normalized:',gamma_c)
+        # print('gamma_c argmax:',torch.argmax(gamma_c,1))
+        print('gamma_c counter:',Counter(torch.argmax(gamma_c,1).tolist()))
+
 
         # self.pi_.data = (self.pi_/self.pi_.sum()).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
         # self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
-        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+
-            torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+
-            (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+        KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+        temp_kld=-(0.5/n_nodes)*torch.sum((mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2)
+
+        # KLD_u_c_test=-(0.5/n_nodes)*F.mse_loss(mu.unsqueeze(1),self.mu_c.unsqueeze(0),reduction='none')
+        # print('kld_u_c_test:',KLD_u_c_test.sum(2))
+
+
+        # KLD_u_c=-(0.5/n_nodes)*F.mse_loss(mu.unsqueeze(1),self.mu_c.unsqueeze(0))
 
         # KLD_u_c=(0.5 / n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(self.log_sigma2_c.unsqueeze(0)+\
             # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
@@ -459,7 +476,8 @@ class GCNModelVAECE(nn.Module):
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
-        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss
+        # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
+        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, mutual_dist
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
@@ -528,11 +546,19 @@ class GCNModelVAECE(nn.Module):
         # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
         # mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
         # z = torch.randn_like(mu) * torch.exp(z_sigma2_log / 2) + z_mu
+        det=1e-10
         z  = self.reparameterize(mu,logvar)
         pi = self.pi_
-        log_sigma2_c = self.log_sigma2_c
-        mu_c = self.mu_c
-        gamma_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
+        # log_sigma2_c = self.log_sigma2_c
+        # mu_c = self.mu_c
+        # gamma_c = torch.exp(torch.log(pi.unsqueeze(0))+self.gaussian_pdfs_log(z,mu_c,log_sigma2_c))
+        gamma_c = torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        print('gamma_c:',gamma_c)
+        gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
+        # gamma_c=F.softmax(gamma_c)
+        print('gamma_c,normalized:',gamma_c)
+        print('gamma_c argmax:',torch.argmax(gamma_c,1))
+        print('gamma_c argmax counter:',Counter(torch.argmax(gamma_c,1).tolist()))
 
         gamma=gamma_c.detach().cpu().numpy()
         return np.argmax(gamma,axis=1),gamma
@@ -558,16 +584,21 @@ class GCNModelVAECE(nn.Module):
 
         return np.argmin(gamma,axis=1),np.array(gamma)
 
-    def plot_tsne(self,dataset,epoch,z):
+    def plot_tsne(self,dataset,epoch,z,true_label):
+
+        cluster_labels=set(true_label)
+        index_group= [np.array(true_label)==y for y in cluster_labels]
+        colors = cm.tab20(range(len(index_group)))
+
         tsne = TSNE(n_components=2, init='pca')
-        zs_tsne = tsne.fit_transform(self.mu_c.detach().numpy())
+        data = torch.cat([z,self.mu_c],dim=0).detach().numpy()
+        zs_tsne = tsne.fit_transform(data)
 
         fig, ax = plt.subplots()
         cmap = plt.get_cmap("tab10")
-        ax.scatter(zs_tsne[:, 0], zs_tsne[:, 1],marker='^')
-
-        z = tsne.fit_transform(z.detach().numpy())
-        ax.scatter(z[:, 0], z[:, 1],s=2)
+        for index,c in zip(index_group,colors):
+            ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+        ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=20)
         # ax.legend()
         plt.savefig("{}_{}_tsne.pdf".format(dataset,epoch))
 
@@ -589,4 +620,5 @@ class GCNModelVAECE(nn.Module):
     def check_gradient(self):
         for name, param in self.named_parameters():
             if param.requires_grad:
-                print('grad: ',name, param.grad,param.grad.shape)
+                print('grad: ',name)
+                print(param.grad,param.grad.shape)

@@ -23,7 +23,7 @@ class GraphConvolution(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        input = F.dropout(input, self.dropout, self.training)
+        # input = F.dropout(input, self.dropout, self.training)
         support = torch.mm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)
@@ -53,7 +53,7 @@ class GraphConvolutionSparse(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        input = F.dropout(input, self.dropout, self.training)
+        # input = F.dropout(input, self.dropout, self.training)
         support = torch.spmm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)
@@ -112,7 +112,7 @@ class InnerProductDecoder(torch.nn.Module):
         self.act = act
 
     def forward(self, z):
-        z = F.dropout(z, self.dropout, training=self.training)
+        # z = F.dropout(z, self.dropout, training=self.training)
         adj = self.act(torch.mm(z, z.t()))
         return adj
 
@@ -126,8 +126,8 @@ class InnerDecoder(torch.nn.Module):
 
     def forward(self,inputs):
         z_u, z_a = inputs
-        z_u = F.dropout(z_u, self.dropout, training=self.training)
-        z_a = F.dropout(z_a, self.dropout,training = self.training)
+        # z_u = F.dropout(z_u, self.dropout, training=self.training)
+        # z_a = F.dropout(z_a, self.dropout,training = self.training)
         adj = self.act(torch.mm(z_u, z_u.t())) # predicted adj matrix
         features = self.act(torch.mm(z_u,z_a.t())) #predicted feature matrix
         return adj,features

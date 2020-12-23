@@ -185,7 +185,7 @@ def training(args):
                 # loss.backward()
                 # optimizer2.step()
 
-                if epoch <-1 and args.model in ['gcn_vaece','gcn_vaecd']:
+                if epoch <20 and args.model in ['gcn_vaece','gcn_vaecd']:
                     optimizer1.zero_grad()
                     loss.backward()
                     optimizer1.step()
@@ -198,12 +198,12 @@ def training(args):
 
             lr_s.step()
 
-            model.check_gradient()
-            model.check_parameters()
+            # model.check_gradient()
+            # model.check_parameters()
 
             if (epoch+1)%50==0:
                 z = model.reparameterize(mu_u,logvar_u)
-                model.plot_tsne(args.dataset,epoch,z)
+                model.plot_tsne(args.dataset,epoch,z,Y)
 
 
 
@@ -226,7 +226,7 @@ def training(args):
 
 
             tru=Y
-            model.eval()
+            # model.eval()
 
             # if args.model == 'vgaecd':
                     # pre=model.predict(mu_u,logvar_u)
@@ -271,20 +271,19 @@ def training(args):
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
                   "time=", "{:.5f}".format(time.time() - t))
 
-        model.check_parameters()
+        # model.check_parameters()
         z = model.reparameterize(mu_u,logvar_u)
-        model.plot_tsne(args.dataset,epoch,z)
+        model.plot_tsne(args.dataset,epoch,z,tru)
         print("Optimization Finished!")
 
-        if args.model == 'gcn_vaece':
-            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-        else:
-            recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+        # if args.model == 'gcn_vaece':
+            # (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+        # else:
+            # recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
 
         if args.model in ['gcn_vaecd','gcn_vaece']:
-            pre,gamma = model.predict_dist(mu_u,logvar_u)
-            print("gamma:\n{}".format(gamma))
+            pre,gamma = model.predict(mu_u,logvar_u)
         else:
             pre=clustering_latent_space(mu_u.detach().numpy(),tru)
 
