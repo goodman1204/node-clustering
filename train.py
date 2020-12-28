@@ -122,7 +122,6 @@ def training(args):
             # model.pre_train(features_training,adj_norm,Y,pre_epoch=50)
 
         optimizer2 = optim.Adam(model.parameters(), lr=args.lr)
-        # optimizer2 = optim.Adam([model.parameters()], lr=args.lr)
 
         # params2=[model.pi_,model.mu_c,model.log_sigma2_c]
         # optimizer2 = optim.Adam(itertools.chain(*params2), lr=args.lr)
@@ -176,23 +175,27 @@ def training(args):
                 # else:
                     # loss = loss_list[2]+loss_list[3]+loss_list[4]
 
-            # if not epoch%10==0:
-                # optimizer1.zero_grad()
-                # loss.backward()
-                # optimizer1.step()
-            # else:
-                # optimizer2.zero_grad()
-                # loss.backward()
-                # optimizer2.step()
-
-                if epoch <20 and args.model in ['gcn_vaece','gcn_vaecd']:
-                    optimizer1.zero_grad()
-                    loss.backward()
-                    optimizer1.step()
-                else:
+                if epoch%10 <6:
+                    # model.change_nn_grad_true()
+                    model.change_cluster_grad_false()
                     optimizer2.zero_grad()
                     loss.backward()
                     optimizer2.step()
+                else:
+                    # model.change_nn_grad_false()
+                    model.change_cluster_grad_true()
+                    optimizer2.zero_grad()
+                    loss.backward()
+                    optimizer2.step()
+
+                # if epoch <10 and args.model in ['gcn_vaece','gcn_vaecd']:
+                    # optimizer1.zero_grad()
+                    # loss.backward()
+                    # optimizer1.step()
+                # else:
+                    # optimizer2.zero_grad()
+                    # loss.backward()
+                    # optimizer2.step()
 
 
 
@@ -201,9 +204,10 @@ def training(args):
             # model.check_gradient()
             # model.check_parameters()
 
-            if (epoch+1)%50==0:
-                z = model.reparameterize(mu_u,logvar_u)
-                model.plot_tsne(args.dataset,epoch,z,Y)
+            # if (epoch+1)%50==0:
+                # pre,gamma,z = model.predict(mu_u,logvar_u)
+                # model.plot_tsne(args.dataset,epoch,z,pre,'predict label')
+                # model.plot_tsne(args.dataset,epoch,z,Y,'true label')
 
 
 
@@ -272,8 +276,8 @@ def training(args):
                   "time=", "{:.5f}".format(time.time() - t))
 
         # model.check_parameters()
-        z = model.reparameterize(mu_u,logvar_u)
-        model.plot_tsne(args.dataset,epoch,z,tru)
+        # z = model.reparameterize(mu_u,logvar_u)
+        # model.plot_tsne(args.dataset,epoch,z,tru,'true label')
         print("Optimization Finished!")
 
         # if args.model == 'gcn_vaece':
@@ -283,7 +287,9 @@ def training(args):
 
 
         if args.model in ['gcn_vaecd','gcn_vaece']:
-            pre,gamma = model.predict(mu_u,logvar_u)
+            pre,gamma,z = model.predict(mu_u,logvar_u)
+            model.plot_tsne(args.dataset,epoch,z,tru,'true label')
+            model.plot_tsne(args.dataset,epoch,z,pre,'predict label')
         else:
             pre=clustering_latent_space(mu_u.detach().numpy(),tru)
 
@@ -331,7 +337,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-    parser.add_argument('--epochs', type=int, default=20, help='Number of epochs to train.')
+    parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=16, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=8, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')

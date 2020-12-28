@@ -1,3 +1,4 @@
+*.pdf
 .idea/
 logs/
 pretrain_model.pk 

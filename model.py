@@ -210,7 +210,7 @@ class GCNModelVAECD(nn.Module):
         z = self.reparameterize(mu,logvar)
 
         gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        # gamma_c = F.softmax(gamma_c) # is softmax a good way?
+        gamma_c = F.softmax(gamma_c) # is softmax a good way?
 
         gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1)) #shape: batch_size*Clusters
         self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
@@ -392,6 +392,27 @@ class GCNModelVAECE(nn.Module):
         mi_a = estimate_mutual_information('js',z[indice],a[indice],self.critic_feature)
         return mi_a
 
+    def change_cluster_grad_false(self):
+        for name, param in self.named_parameters():
+            if name in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=False
+
+    def change_cluster_grad_true(self):
+        for name, param in self.named_parameters():
+            if name in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=True
+
+
+    def change_nn_grad_false(self):
+        for name, param in self.named_parameters():
+            if name not in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=False
+
+    def change_nn_grad_true(self):
+        for name, param in self.named_parameters():
+            if name not in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=True
+
     def loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
 
         det=1e-10
@@ -446,7 +467,7 @@ class GCNModelVAECE(nn.Module):
         # print('gamma_c:',gamma_c)
 
         gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
-        # gamma_c=F.softmax(gamma_c)
+        gamma_c=F.softmax(gamma_c)
         # print('gamma_c normalized:',gamma_c)
         # print('gamma_c argmax:',torch.argmax(gamma_c,1))
         print('gamma_c counter:',Counter(torch.argmax(gamma_c,1).tolist()))
@@ -477,7 +498,7 @@ class GCNModelVAECE(nn.Module):
 
 
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
-        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, mutual_dist
+        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, 0.05*mutual_dist
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
@@ -555,13 +576,13 @@ class GCNModelVAECE(nn.Module):
         gamma_c = torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
         print('gamma_c:',gamma_c)
         gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
-        # gamma_c=F.softmax(gamma_c)
+        gamma_c=F.softmax(gamma_c)
         print('gamma_c,normalized:',gamma_c)
         print('gamma_c argmax:',torch.argmax(gamma_c,1))
         print('gamma_c argmax counter:',Counter(torch.argmax(gamma_c,1).tolist()))
 
         gamma=gamma_c.detach().cpu().numpy()
-        return np.argmax(gamma,axis=1),gamma
+        return np.argmax(gamma,axis=1),gamma, z
 
     def predict_dist(self,mu, logvar):
         # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
@@ -584,13 +605,14 @@ class GCNModelVAECE(nn.Module):
 
         return np.argmin(gamma,axis=1),np.array(gamma)
 
-    def plot_tsne(self,dataset,epoch,z,true_label):
+    def plot_tsne(self,dataset,epoch,z,true_label,desp):
 
         cluster_labels=set(true_label)
+        print(cluster_labels)
         index_group= [np.array(true_label)==y for y in cluster_labels]
         colors = cm.tab20(range(len(index_group)))
 
-        tsne = TSNE(n_components=2, init='pca')
+        tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
         data = torch.cat([z,self.mu_c],dim=0).detach().numpy()
         zs_tsne = tsne.fit_transform(data)
 
@@ -598,9 +620,15 @@ class GCNModelVAECE(nn.Module):
         cmap = plt.get_cmap("tab10")
         for index,c in zip(index_group,colors):
             ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
-        ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=20)
+
+        if 'predict' in desp.split():
+            for index,c in enumerate(colors):
+                ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
+        else:
+            ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
+        plt.title(desp)
         # ax.legend()
-        plt.savefig("{}_{}_tsne.pdf".format(dataset,epoch))
+        plt.savefig("{}_{}_tsne_{}.pdf".format(dataset,epoch,desp))
 
     def gaussian_pdfs_log(self,x,mus,log_sigma2s):
         G=[]
