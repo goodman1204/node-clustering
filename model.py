@@ -11,7 +11,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 
-from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder
+from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder,SpGAT,GAT
 from utils import cluster_acc
 
 from utils_smiles import *
@@ -230,7 +230,7 @@ class GCNModelVAECD(nn.Module):
 
         return L_rec_u,-KLD_u_c,-gamma_loss
 
-    def pre_train(self,x,adj,Y,pre_epoch=50):
+    def pre_train(self,x,adj,Y,pre_epoch=10):
         '''
         This function is used to initialize  cluster paramters: pi_, mu_c, log_sigma2_c.
         -------------
@@ -326,9 +326,12 @@ class GCNModelVAECE(nn.Module):
 
 
         self.args = args
-        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
-        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
-        self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        # self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+        # self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        # self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=8)
+        self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=8)
+        self.gc3 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=8)
         # self.dc = InnerProductDecoder(dropout, act=lambda x: x)
         self.dc = InnerDecoder(dropout, act=lambda x: x)
 
@@ -337,13 +340,18 @@ class GCNModelVAECE(nn.Module):
         self.linear_a2= Linear(hidden_dim1, hidden_dim2, act = lambda x:x)
         self.linear_a3= Linear(hidden_dim1, hidden_dim2, act = lambda x:x)
 
+        #modularity layer
+        self.modulairty_layer = Linear(hidden_dim2,args.nClusters,act=torch.relu)
+        # cluster choosing
+        self.cluster_choose= Linear(hidden_dim2,args.nClusters,act=torch.sigmoid)
+
 
         self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
-        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.01),requires_grad=True)
-        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.1),requires_grad=True)
+        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
+        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(1),requires_grad=True)
 
-        torch.nn.init.xavier_uniform_(self.mu_c)
-        torch.nn.init.xavier_uniform_(self.log_sigma2_c)
+        torch.nn.init.xavier_normal_(self.mu_c)
+        torch.nn.init.xavier_normal_(self.log_sigma2_c)
 
         # calculate mi
 
@@ -376,6 +384,25 @@ class GCNModelVAECE(nn.Module):
         z_u = self.reparameterize(mu, logvar)
         z_a = self.reparameterize(mu_a,logvar_a)
         return self.dc((z_u,z_a)),mu, logvar, mu_a, logvar_a
+
+    def modularity_loss(self, z,adj):
+
+        adj = adj.to_dense()
+        H = self.modulairty_layer(z)
+        assert H.shape[0]==z.shape[0]
+
+        n = torch.tensor(1.0*z.shape[0])
+
+        H_norm = n.sqrt()*H.sqrt()/(H.sqrt().sum())
+        print("H_norm shape",H_norm.shape)
+        print("H_norm ",H_norm)
+        m = (adj-torch.eye(adj.shape[0])).sum()/2
+        D = (adj-torch.eye(adj.shape[0])).sum(1) # the degree of nodes, adj includes self loop
+        B = (adj-torch.eye(adj.shape[0]))-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
+        mod_loss=torch.trace(torch.matmul(torch.matmul(H_norm.t(),B),H_norm)/(4*m))
+        print("mod_loss",mod_loss)
+
+        return mod_loss
 
     def dist(self,x):
         # x = x/torch.norm(x,2,dim=1).view(-1,1)
@@ -462,8 +489,10 @@ class GCNModelVAECE(nn.Module):
         # z = torch.randn_like(z_mu) * torch.exp(z_sigma2_log / 2) + z_mu
         z = self.reparameterize(mu,logvar)
 
+        # mod_loss=self.modularity_loss(z,adj)
         # gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        # gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+        gamma_c  = self.cluster_choose(z)
         # print('gamma_c:',gamma_c)
 
         gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
@@ -477,7 +506,6 @@ class GCNModelVAECE(nn.Module):
         # self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
         KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
-        temp_kld=-(0.5/n_nodes)*torch.sum((mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2)
 
         # KLD_u_c_test=-(0.5/n_nodes)*F.mse_loss(mu.unsqueeze(1),self.mu_c.unsqueeze(0),reduction='none')
         # print('kld_u_c_test:',KLD_u_c_test.sum(2))
@@ -489,7 +517,7 @@ class GCNModelVAECE(nn.Module):
             # torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+\
             # (mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 
-        mutual_dist = (-1/(self.args.nClusters**2))*self.dist(self.mu_c)
+        mutual_dist = (1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
         # gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
@@ -498,12 +526,12 @@ class GCNModelVAECE(nn.Module):
 
 
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
-        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, 0.05*mutual_dist
+        return L_rec_u , L_rec_a , -5*KLD_u_c ,-KLD_a , -gamma_loss, -0.05*mutual_dist
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
 
-    def pre_train(self,x,adj,Y,pre_epoch=50):
+    def pre_train(self,x,adj,Y,pre_epoch=20):
         '''
         This function is used to initialize  cluster paramters: pi_, mu_c, log_sigma2_c.
         -------------
@@ -613,7 +641,7 @@ class GCNModelVAECE(nn.Module):
         colors = cm.tab20(range(len(index_group)))
 
         tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
-        data = torch.cat([z,self.mu_c],dim=0).detach().numpy()
+        data = torch.cat([z,self.mu_c.cpu()],dim=0).detach().numpy()
         zs_tsne = tsne.fit_transform(data)
 
         fig, ax = plt.subplots()

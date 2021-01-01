@@ -7,6 +7,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 from torch import optim
+from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
 from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation
@@ -16,6 +17,7 @@ from tensorboardX import SummaryWriter
 from evaluation import clustering_latent_space
 from collections import Counter
 import itertools
+import random
 
 import warnings
 warnings.simplefilter("ignore")
@@ -126,14 +128,29 @@ def training(args):
         # params2=[model.pi_,model.mu_c,model.log_sigma2_c]
         # optimizer2 = optim.Adam(itertools.chain(*params2), lr=args.lr)
 
+        if args.cuda:
+            model.cuda()
+            features_training = features_training.to_dense().cuda()
+            adj_norm = adj_norm.to_dense().cuda()
+            pos_weight_u = pos_weight_u.cuda()
+            pos_weight_a = pos_weight_a.cuda()
+            adj_label = adj_label.cuda()
+            features_label = features_label.cuda()
+            # idx_train = idx_train.cuda()
 
+            # idx_val = idx_val.cuda()
+            # idx_test = idx_test.cuda()
+
+        features_training, adj_norm = Variable(features_training), Variable(adj_norm)
+        pos_weight_u = Variable(pos_weight_u)
+        pos_weight_a = Variable(pos_weight_a)
         hidden_emb_u = None
         hidden_emb_a = None
 
         cost_val = []
         acc_val = []
         val_roc_score = []
-        lr_s=StepLR(optimizer1,step_size=30,gamma=1) # it seems that fix leanring rate is better
+        lr_s=StepLR(optimizer1,step_size=30,gamma=0.95) # it seems that fix leanring rate is better
 
         loss_list=None
         for epoch in range(args.epochs):
@@ -155,27 +172,12 @@ def training(args):
                 loss =sum(loss_list)
             elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
 
-                # if epoch %50==0:
-                    # for name, param in model.named_parameters():
-                        # if name in [ 'log_sigma2_c','pi_','mu_c']:
-                            # param.requires_grad=True
-                # else:
-                    # for name, param in model.named_parameters():
-                        # if name in [ 'log_sigma2_c','pi_','mu_c']:
-                            # param.requires_grad=False
-
 
                 (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-                # loss = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
                 loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
                 loss =sum(loss_list)
-                # loss = loss_list[0]+loss_list[1]+60*loss_list[2]+loss_list[3]+loss_list[4]+loss_list[5]
-                # if epoch%2==0:
-                    # loss = loss_list[0]+loss_list[1]
-                # else:
-                    # loss = loss_list[2]+loss_list[3]+loss_list[4]
 
-                if epoch%10 <6:
+                if epoch%10 <5:
                     # model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                     optimizer2.zero_grad()
@@ -187,15 +189,6 @@ def training(args):
                     optimizer2.zero_grad()
                     loss.backward()
                     optimizer2.step()
-
-                # if epoch <10 and args.model in ['gcn_vaece','gcn_vaecd']:
-                    # optimizer1.zero_grad()
-                    # loss.backward()
-                    # optimizer1.step()
-                # else:
-                    # optimizer2.zero_grad()
-                    # loss.backward()
-                    # optimizer2.step()
 
 
 
@@ -211,7 +204,7 @@ def training(args):
 
 
 
-            correct_prediction_u = ((torch.sigmoid(recovered_u)>=0.5)==adj_label.type(torch.LongTensor))
+            correct_prediction_u = ((torch.sigmoid(recovered_u.to('cpu'))>=0.5)==adj_label.type(torch.LongTensor))
             # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
 
             accuracy = torch.mean(correct_prediction_u*1.0)
@@ -288,8 +281,8 @@ def training(args):
 
         if args.model in ['gcn_vaecd','gcn_vaece']:
             pre,gamma,z = model.predict(mu_u,logvar_u)
-            model.plot_tsne(args.dataset,epoch,z,tru,'true label')
-            model.plot_tsne(args.dataset,epoch,z,pre,'predict label')
+            model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,'true label')
+            model.plot_tsne(args.dataset,epoch,z.to('cpu'),pre,'predict label')
         else:
             pre=clustering_latent_space(mu_u.detach().numpy(),tru)
 
@@ -338,17 +331,23 @@ def parse_args():
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=42, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=16, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=8, help='Number of units in hidden layer 2.')
+    parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0., help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
+    parser.add_argument('--cuda', action='store_true', default=False, help='Disables CUDA training.')
     args, unknown = parser.parse_known_args()
 
     return args
 
 if __name__ == '__main__':
     args = parse_args()
+    if args.cuda:
+        torch.cuda.set_device(1)
+        torch.cuda.manual_seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
     training(args)
