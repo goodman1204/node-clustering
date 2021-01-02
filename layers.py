@@ -24,7 +24,7 @@ class GraphConvolution(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        # input = F.dropout(input, self.dropout, self.training)
+        input = F.dropout(input, self.dropout, self.training)
         support = torch.mm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)
@@ -54,7 +54,7 @@ class GraphConvolutionSparse(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        # input = F.dropout(input, self.dropout, self.training)
+        input = F.dropout(input, self.dropout, self.training)
         support = torch.spmm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)
@@ -113,7 +113,7 @@ class InnerProductDecoder(torch.nn.Module):
         self.act = act
 
     def forward(self, z):
-        # z = F.dropout(z, self.dropout, training=self.training)
+        z = F.dropout(z, self.dropout, training=self.training)
         adj = self.act(torch.mm(z, z.t()))
         return adj
 
@@ -127,8 +127,8 @@ class InnerDecoder(torch.nn.Module):
 
     def forward(self,inputs):
         z_u, z_a = inputs
-        # z_u = F.dropout(z_u, self.dropout, training=self.training)
-        # z_a = F.dropout(z_a, self.dropout,training = self.training)
+        z_u = F.dropout(z_u, self.dropout, training=self.training)
+        z_a = F.dropout(z_a, self.dropout,training = self.training)
         adj = self.act(torch.mm(z_u, z_u.t())) # predicted adj matrix
         features = self.act(torch.mm(z_u,z_a.t())) #predicted feature matrix
         return adj,features
@@ -326,10 +326,11 @@ class SpGAT(nn.Module):
                                              concat=False)
 
     def forward(self, x, adj):
-        x = F.dropout(x, self.dropout, training=self.training)
+        # x = F.dropout(x, self.dropout, training=self.training)
         x = torch.cat([att(x, adj) for att in self.attentions], dim=1)
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = F.elu(self.out_att(x, adj))
+        # x = F.dropout(x, self.dropout, training=self.training)
+        x = self.out_att(x, adj)
+        # x = F.elu(self.out_att(x, adj))
         # return F.log_softmax(x, dim=1)
         return x
 
@@ -349,6 +350,6 @@ class GAT(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         x = torch.cat([att(x, adj) for att in self.attentions], dim=1)
         x = F.dropout(x, self.dropout, training=self.training)
-        x = F.elu(self.out_att(x, adj))
+        # x = F.elu(self.out_att(x, adj))
         return x
         # return F.log_softmax(x, dim=1)

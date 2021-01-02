@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -37,6 +37,11 @@ def training(args):
     n_nodes, n_features= features.shape
     # assert check_symmetric(adj_init).sum()==n_nodes*n_nodes,"adj should be symmetric"
     print("imported graph edge number (without selfloop):{}".format((adj_init-adj_init.diagonal()).sum()/2))
+
+    # find motif 3 nodes
+
+    # motif_matrix=find_motif(adj_init,args.dataset)
+    # print("find motif")
 
 
     args.nClusters=len(set(Y))
@@ -334,7 +339,7 @@ def parse_args():
     parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')
-    parser.add_argument('--dropout', type=float, default=0., help='Dropout rate (1 - keep probability).')
+    parser.add_argument('--dropout', type=float, default=0.2, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')

@@ -11,7 +11,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 
-from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder,SpGAT,GAT
+from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder
 from utils import cluster_acc
 
 from utils_smiles import *
@@ -326,12 +326,9 @@ class GCNModelVAECE(nn.Module):
 
 
         self.args = args
-        # self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
-        # self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
-        # self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
-        self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=8)
-        self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=8)
-        self.gc3 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=8)
+        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+        self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         # self.dc = InnerProductDecoder(dropout, act=lambda x: x)
         self.dc = InnerDecoder(dropout, act=lambda x: x)
 
@@ -350,8 +347,8 @@ class GCNModelVAECE(nn.Module):
         self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
         self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(1),requires_grad=True)
 
-        torch.nn.init.xavier_normal_(self.mu_c)
-        torch.nn.init.xavier_normal_(self.log_sigma2_c)
+        # torch.nn.init.xavier_normal_(self.mu_c)
+        # torch.nn.init.xavier_normal_(self.log_sigma2_c)
 
         # calculate mi
 
@@ -519,14 +516,14 @@ class GCNModelVAECE(nn.Module):
 
         mutual_dist = (1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
-        # gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
+        gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
-        gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
+        # gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
-        return L_rec_u , L_rec_a , -5*KLD_u_c ,-KLD_a , -gamma_loss, -0.05*mutual_dist
+        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, -0.05*mutual_dist
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
@@ -641,7 +638,7 @@ class GCNModelVAECE(nn.Module):
         colors = cm.tab20(range(len(index_group)))
 
         tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
-        data = torch.cat([z,self.mu_c.cpu()],dim=0).detach().numpy()
+        data = torch.cat([z,self.mu_c.to('cpu')],dim=0).detach().numpy()
         zs_tsne = tsne.fit_transform(data)
 
         fig, ax = plt.subplots()

@@ -6,6 +6,37 @@ import scipy.sparse as sp
 import torch
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn import metrics
+import itertools
+import os
+
+def find_motif(adj, dataset_name):
+
+    path = 'data/{}_motif.npy'.format(dataset_name)
+    motif_matrix = None
+
+    if os.path.exists(path):
+        motif_matrix = np.load(path,allow_pickle=True)
+    else:
+
+        g = nx.Graph()
+        g = nx.from_scipy_sparse_matrix(adj)
+        target = nx.Graph()
+        target.add_edge(1,2)
+        target.add_edge(2,3)
+
+        N = g.number_of_nodes()
+        motif_matrix = np.zeros((N,N))
+        for sub_nodes in itertools.combinations(g.nodes(),len(target.nodes())):
+            subg = g.subgraph(sub_nodes)
+            if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
+                for e in subg.edges():
+                    motif_matrix[e[0]][e[1]]=1
+                    motif_matrix[e[1]][e[0]]=1
+
+        with open(path,'wb') as wp:
+            np.save(wp,sp.coo_matrix(motif_matrix))
+
+    return motif_matrix
 
 
 
