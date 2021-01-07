@@ -52,8 +52,10 @@ def training(args):
     print("node size:{}, feature size:{}".format(n_nodes,n_features))
 
 
-    # adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj_init)
-    # fea_train, train_feas, val_feas, val_feas_false, test_feas, test_feas_false = mask_test_feas(features)
+    adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(sp.csc_matrix(adj_init))
+    print('adj_train sum\n',adj_train.sum()/2)
+    fea_train, train_feas, val_feas, val_feas_false, test_feas, test_feas_false = mask_test_feas(features)
+    print('fea_train shape',fea_train.shape)
 
     features_orig = features
     features_label = torch.FloatTensor(features.toarray())
@@ -75,20 +77,28 @@ def training(args):
     embedding_attr_var_result_file = "result/AGAE_{}_a_sig.emb".format(args.dataset)
 
     # Some preprocessing, get the support matrix, D^{-1/2}\hat{A}D^{-1/2}
-    adj_norm = preprocess_graph(adj_init)
-    print("graph edge number after normalize adjacent matrix:{}".format(adj_init.sum()/2))
+    adj_norm = preprocess_graph(adj_train)
 
-    pos_weight_u = torch.tensor(float(adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) / adj_init.sum()) #??
-    norm_u = adj_init.shape[0] * adj_init.shape[0] / float((adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) * 2) #??
-    pos_weight_a = torch.tensor(float(features[2][0] * features[2][1] - len(features[1])) / len(features[1]))
-    norm_a = features[2][0] * features[2][1] / float((features[2][0] * features[2][1] - len(features[1])) * 2)
+    # pos_weight_u = torch.tensor(float(adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) / adj_init.sum()) #??
+    # norm_u = adj_init.shape[0] * adj_init.shape[0] / float((adj_init.shape[0] * adj_init.shape[0] - adj_init.sum()) * 2) #??
+    # pos_weight_a = torch.tensor(float(features[2][0] * features[2][1] - len(features[1])) / len(features[1]))
+    # norm_a = features[2][0] * features[2][1] / float((features[2][0] * features[2][1] - len(features[1])) * 2)
 
+    pos_weight_u = torch.tensor(float(adj_train.shape[0] * adj_train.shape[0] - adj_train.sum()) / adj_train.sum()) #??
+    norm_u = adj_train.shape[0] * adj_train.shape[0] / float((adj_train.shape[0] * adj_train.shape[0] - adj_train.sum()) * 2) #??
+    pos_weight_a = torch.tensor(float(fea_train.shape[0] * fea_train.shape[1] - (fea_train.sum())) / (fea_train.sum()))
+    norm_a = fea_train.shape[0] * fea_train.shape[0] / float(fea_train.shape[0] * fea_train.shape[1] - fea_train.sum()) * 2
     features_training = sparse_mx_to_torch_sparse_tensor(features_orig)
 
+    print('pos_weight_u,norm_u,pos_weight_a,norm_a',pos_weight_u,norm_u,pos_weight_a,norm_a)
+
+    adj_label = torch.FloatTensor(adj_train.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
+
+    fea_train = sparse_mx_to_torch_sparse_tensor(fea_train)
+    adj_train = sparse_mx_to_torch_sparse_tensor(adj_train)
     # clustering pretraining for GMM paramter initialization
     # writer=SummaryWriter('./logs')
 
-    adj_label = torch.FloatTensor(adj_init.toarray()+sp.eye(adj_init.shape[0])) # add the identity matrix to the adj as label
 
     mean_h=[]
     mean_c=[]
@@ -100,6 +110,26 @@ def training(args):
     mean_accuracy=[]
 
 
+    if args.cuda:
+        features_training = features_training.to_dense().cuda()
+        fea_train = fea_train.to_dense().cuda()
+        print('fea_train\n',fea_train)
+        adj_train = adj_train.to_dense().cuda()
+        print('adj_train\n',adj_train)
+        print('adj_train sum\n',adj_train.sum())
+        adj_norm = adj_norm.to_dense().cuda()
+        pos_weight_u = pos_weight_u.cuda()
+        pos_weight_a = pos_weight_a.cuda()
+        adj_label = adj_label.cuda()
+        features_label = features_label.cuda()
+        # idx_train = idx_train.cuda()
+
+        # idx_val = idx_val.cuda()
+        # idx_test = idx_test.cuda()
+
+    features_training, adj_norm = Variable(features_training), Variable(adj_norm)
+    pos_weight_u = Variable(pos_weight_u)
+    pos_weight_a = Variable(pos_weight_a)
 
     for r in range(args.num_run):
 
@@ -115,8 +145,10 @@ def training(args):
 
                 # using GMM to pretrain the  clustering parameters
 
+        if args.cuda:
+            model.cuda()
 
-        print([i for i in model.named_parameters()])
+        # print([i for i in model.named_parameters()])
 
 
         if args.model == 'gcn_vaecd':
@@ -133,22 +165,6 @@ def training(args):
         # params2=[model.pi_,model.mu_c,model.log_sigma2_c]
         # optimizer2 = optim.Adam(itertools.chain(*params2), lr=args.lr)
 
-        if args.cuda:
-            model.cuda()
-            features_training = features_training.to_dense().cuda()
-            adj_norm = adj_norm.to_dense().cuda()
-            pos_weight_u = pos_weight_u.cuda()
-            pos_weight_a = pos_weight_a.cuda()
-            adj_label = adj_label.cuda()
-            features_label = features_label.cuda()
-            # idx_train = idx_train.cuda()
-
-            # idx_val = idx_val.cuda()
-            # idx_test = idx_test.cuda()
-
-        features_training, adj_norm = Variable(features_training), Variable(adj_norm)
-        pos_weight_u = Variable(pos_weight_u)
-        pos_weight_a = Variable(pos_weight_a)
         hidden_emb_u = None
         hidden_emb_a = None
 
@@ -178,18 +194,18 @@ def training(args):
             elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
 
 
-                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-                loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(fea_train,adj_norm)
+                loss_list = model.loss(fea_train,adj_norm,labels = (adj_train, fea_train), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
                 loss =sum(loss_list)
 
-                if epoch%10 <5:
-                    # model.change_nn_grad_true()
+                if epoch%10 <8:
+                    model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                     optimizer2.zero_grad()
                     loss.backward()
                     optimizer2.step()
                 else:
-                    # model.change_nn_grad_false()
+                    model.change_nn_grad_false()
                     model.change_cluster_grad_true()
                     optimizer2.zero_grad()
                     loss.backward()
@@ -284,12 +300,7 @@ def training(args):
             # recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
 
-        if args.model in ['gcn_vaecd','gcn_vaece']:
-            pre,gamma,z = model.predict(mu_u,logvar_u)
-            model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,'true label')
-            model.plot_tsne(args.dataset,epoch,z.to('cpu'),pre,'predict label')
-        else:
-            pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+        pre,gamma,z = model.predict(mu_u,logvar_u)
 
         H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
@@ -302,6 +313,11 @@ def training(args):
         mean_purity.append(round(purity,4))
         mean_accuracy.append(round(acc,4))
 
+    if args.model in ['gcn_vaecd','gcn_vaece']:
+        pre,gamma,z = model.predict(mu_u,logvar_u)
+        model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,pre)
+    else:
+        pre=clustering_latent_space(mu_u.detach().numpy(),tru)
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
         # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
@@ -338,7 +354,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
-    parser.add_argument('--lr', type=float, default=0.005, help='Initial aearning rate.')
+    parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.2, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)

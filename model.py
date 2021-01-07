@@ -230,7 +230,7 @@ class GCNModelVAECD(nn.Module):
 
         return L_rec_u,-KLD_u_c,-gamma_loss
 
-    def pre_train(self,x,adj,Y,pre_epoch=10):
+    def pre_train(self,x,adj,Y,pre_epoch=50):
         '''
         This function is used to initialize  cluster paramters: pi_, mu_c, log_sigma2_c.
         -------------
@@ -339,15 +339,13 @@ class GCNModelVAECE(nn.Module):
 
         #modularity layer
         self.modulairty_layer = Linear(hidden_dim2,args.nClusters,act=torch.relu)
-        # cluster choosing
-        self.cluster_choose= Linear(hidden_dim2,args.nClusters,act=torch.sigmoid)
 
 
         self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
-        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0),requires_grad=True)
-        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(1),requires_grad=True)
+        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.00),requires_grad=True)
+        self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.0),requires_grad=False)
 
-        # torch.nn.init.xavier_normal_(self.mu_c)
+        torch.nn.init.xavier_normal_(self.mu_c)
         # torch.nn.init.xavier_normal_(self.log_sigma2_c)
 
         # calculate mi
@@ -488,8 +486,7 @@ class GCNModelVAECE(nn.Module):
 
         # mod_loss=self.modularity_loss(z,adj)
         # gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        # gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-        gamma_c  = self.cluster_choose(z)
+        gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
         # print('gamma_c:',gamma_c)
 
         gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
@@ -503,6 +500,8 @@ class GCNModelVAECE(nn.Module):
         # self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
         KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+        # KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2),1))
+        # temp_kld=-(0.5/n_nodes)*torch.sum((mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2)
 
         # KLD_u_c_test=-(0.5/n_nodes)*F.mse_loss(mu.unsqueeze(1),self.mu_c.unsqueeze(0),reduction='none')
         # print('kld_u_c_test:',KLD_u_c_test.sum(2))
@@ -516,19 +515,19 @@ class GCNModelVAECE(nn.Module):
 
         mutual_dist = (1/(self.args.nClusters**2))*self.dist(self.mu_c)
 
-        gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
+        # gamma_loss=-(1/self.args.nClusters)*torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
-        # gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
+        gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
         # gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
 
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
-        return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, -0.05*mutual_dist
+        return L_rec_u , 0.1*L_rec_a , -30*KLD_u_c ,-KLD_a , -gamma_loss, -0.05*mutual_dist
         # return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
         # return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
 
-    def pre_train(self,x,adj,Y,pre_epoch=20):
+    def pre_train(self,x,adj,Y,pre_epoch=22):
         '''
         This function is used to initialize  cluster paramters: pi_, mu_c, log_sigma2_c.
         -------------
@@ -538,7 +537,7 @@ class GCNModelVAECE(nn.Module):
         Y: is the class label for each node in graph G.
         '''
 
-        if not os.path.exists('./pretrain_model_{}.pk'.format(self.args.dataset)):
+        if not os.path.exists('./pretrain_model_{}_{}.pk'.format(self.args.dataset,pre_epoch)):
 
             Loss=nn.MSELoss()
             opti=Adam(self.parameters()) #all paramters in model
@@ -553,7 +552,7 @@ class GCNModelVAECE(nn.Module):
                 mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
                 pred_adj, pred_x = self.decoder(mu,mu_a,logvar,logvar_a)
 
-                loss=  Loss(pred_x,x.to_dense()) + Loss(pred_adj,adj.to_dense())
+                loss=  Loss(pred_x,x) + Loss(pred_adj,adj)
 
                 L+=loss.detach().cpu().numpy()
 
@@ -564,29 +563,31 @@ class GCNModelVAECE(nn.Module):
                 # epoch_bar.write('L2={:.4f}'.format(L))
                 print('L2={:.4f}'.format(L))
 
-            self.gc2.load_state_dict(self.gc3.state_dict())
-            self.linear_a2.load_state_dict(self.linear_a3.state_dict())
+            # self.gc2.load_state_dict(self.gc3.state_dict())
+            # self.linear_a2.load_state_dict(self.linear_a3.state_dict())
 
 
-            with torch.no_grad():
-                mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
-                assert F.mse_loss(mu, logvar) == 0
-                assert F.mse_loss(mu_a, logvar_a) == 0
-                Z = mu.data.numpy()
+            # with torch.no_grad():
+                # mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
+                # assert F.mse_loss(mu, logvar) == 0
+                # assert F.mse_loss(mu_a, logvar_a) == 0
+                # Z = mu.data.numpy()
 
+            mu, logvar, mu_a, logvar_a  = self.encoder(x,adj)
+            Z  = self.reparameterize(mu,logvar)
 
             gmm = GaussianMixture(n_components=self.args.nClusters, covariance_type='diag')
 
-            pre = gmm.fit_predict(Z)
+            pre = gmm.fit_predict(Z.cpu().detach().numpy())
             print('Acc={:.4f}%'.format(cluster_acc(pre, Y)[0] * 100))
 
             self.pi_.data = torch.from_numpy(gmm.weights_).float()
             self.mu_c.data = torch.from_numpy(gmm.means_).float()
             self.log_sigma2_c.data = torch.log(torch.from_numpy(gmm.covariances_).float())
 
-            torch.save(self.state_dict(), './pretrain_model_{}.pk'.format(self.args.dataset))
+            torch.save(self.state_dict(), './pretrain_model_{}_{}.pk'.format(self.args.dataset,pre_epoch))
         else:
-            self.load_state_dict(torch.load('./pretrain_model_{}.pk'.format(self.args.dataset)))
+            self.load_state_dict(torch.load('./pretrain_model_{}_{}.pk'.format(self.args.dataset,pre_epoch)))
 
     def predict(self,mu, logvar):
         # z_mu, z_sigma2_log, z_ma,z_a_sigma2_log = self.encoder(x,adj)
@@ -630,30 +631,41 @@ class GCNModelVAECE(nn.Module):
 
         return np.argmin(gamma,axis=1),np.array(gamma)
 
-    def plot_tsne(self,dataset,epoch,z,true_label,desp):
+    def plot_tsne(self,dataset,epoch,z,true_label,pred_label):
+
+        tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
+        data = torch.cat([z,self.mu_c.to('cpu')],dim=0).detach().numpy()
+        zs_tsne = tsne.fit_transform(data)
 
         cluster_labels=set(true_label)
         print(cluster_labels)
         index_group= [np.array(true_label)==y for y in cluster_labels]
         colors = cm.tab20(range(len(index_group)))
 
-        tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
-        data = torch.cat([z,self.mu_c.to('cpu')],dim=0).detach().numpy()
-        zs_tsne = tsne.fit_transform(data)
-
         fig, ax = plt.subplots()
-        cmap = plt.get_cmap("tab10")
         for index,c in zip(index_group,colors):
             ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
 
-        if 'predict' in desp.split():
-            for index,c in enumerate(colors):
-                ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
-        else:
-            ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
-        plt.title(desp)
+        ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
+        plt.title('true label')
         # ax.legend()
-        plt.savefig("{}_{}_tsne_{}.pdf".format(dataset,epoch,desp))
+        plt.savefig("./visualization/{}_{}_tsne_{}.pdf".format(dataset,epoch,'true_label'))
+
+        cluster_labels=set(pred_label)
+        print(cluster_labels)
+        index_group= [np.array(pred_label)==y for y in cluster_labels]
+        colors = cm.tab10(range(len(index_group)))
+
+        fig, ax = plt.subplots()
+        for index,c in zip(index_group,colors):
+            ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+
+        for index,c in enumerate(colors):
+            ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
+
+        plt.title('pred label')
+        # ax.legend()
+        plt.savefig("./visualization/{}_{}_tsne_{}.pdf".format(dataset,epoch,'pred_label'))
 
     def gaussian_pdfs_log(self,x,mus,log_sigma2s):
         G=[]

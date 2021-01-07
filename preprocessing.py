@@ -178,7 +178,9 @@ def mask_test_edges(adj):
 
     data = np.ones(train_edges.shape[0])
     adj_train = sp.csr_matrix((data, (train_edges[:, 0], train_edges[:, 1])), shape=adj.shape)
+    print('sum adj_train',adj_train.sum()/2)
     adj_train = adj_train + adj_train.T
+    # adj_train = adj_train
     return adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false
 
 
@@ -191,8 +193,8 @@ def mask_test_feas(features):
         feas.append([fea_row[i], fea_col[i]])
         feas_dic[(fea_row[i], fea_col[i])] = 1
     false_feas_dic = {}
-    num_test = int(np.floor(len(feas) / 10.))
-    num_val = int(np.floor(len(feas) / 20.))
+    num_test = int(np.floor(len(feas) / 30.))
+    num_val = int(np.floor(len(feas) / 30.))
     all_fea_idx = np.arange(len(feas))
     np.random.shuffle(all_fea_idx)
     val_fea_idx = all_fea_idx[:num_val]
