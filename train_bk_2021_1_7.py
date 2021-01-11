@@ -133,7 +133,7 @@ def training(args):
         if args.cuda:
             model.cuda()
 
-        # print([i for i in model.named_parameters()])
+        print([i for i in model.named_parameters()])
 
 
         if args.model == 'gcn_vaecd':
