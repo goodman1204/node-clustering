@@ -285,7 +285,7 @@ def training(args):
             # recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
 
-        pre,gamma,z = model.predict(mu_u,logvar_u)
+        pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
 
         H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
@@ -299,7 +299,7 @@ def training(args):
         mean_accuracy.append(round(acc,4))
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
-        pre,gamma,z = model.predict(mu_u,logvar_u)
+        pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
         model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,pre)
     else:
         pre=clustering_latent_space(mu_u.detach().numpy(),tru)
