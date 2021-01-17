@@ -324,7 +324,6 @@ class GCNModelVAECE(nn.Module):
     def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
         super(GCNModelVAECE, self).__init__()
 
-
         self.args = args
         # self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         # self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)

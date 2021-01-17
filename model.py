@@ -338,12 +338,12 @@ class GCNModelVAECE(nn.Module):
 		self.linear_a3= Linear(hidden_dim1, hidden_dim2, act = lambda x:x)
 
 		#modularity layer
-		# self.modulairty_layer = Linear(hidden_dim2,args.nClusters,act=torch.relu)
+		self.modularity_layer= Linear(hidden_dim2,args.nClusters,act=torch.relu)
 		# self.cluster_choose= Linear(hidden_dim2,args.nClusters,act=torch.relu)
 
 		self.pi_=nn.Parameter(torch.FloatTensor(args.nClusters,).fill_(1)/args.nClusters,requires_grad=True)
 		self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.00),requires_grad=True)
-		self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.0),requires_grad=False)
+		self.log_sigma2_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.0),requires_grad=True)
 
 		torch.nn.init.xavier_normal_(self.mu_c)
 		# torch.nn.init.xavier_normal_(self.log_sigma2_c)
@@ -382,20 +382,20 @@ class GCNModelVAECE(nn.Module):
 
 	def modularity_loss(self, z,adj):
 
-		adj = adj.to_dense()
-		H = self.modulairty_layer(z)
+		# adj = adj.to_dense()
+		H = self.modularity_layer(z)
 		assert H.shape[0]==z.shape[0]
 
 		n = torch.tensor(1.0*z.shape[0])
 
 		H_norm = n.sqrt()*H.sqrt()/(H.sqrt().sum())
-		print("H_norm shape",H_norm.shape)
-		print("H_norm ",H_norm)
-		m = (adj-torch.eye(adj.shape[0])).sum()/2
-		D = (adj-torch.eye(adj.shape[0])).sum(1) # the degree of nodes, adj includes self loop
-		B = (adj-torch.eye(adj.shape[0]))-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
+		# print("H_norm shape",H_norm.shape)
+		# print("H_norm ",H_norm)
+		m = (adj-torch.eye(adj.shape[0]).cuda()).sum()/2
+		D = (adj-torch.eye(adj.shape[0]).cuda()).sum(1) # the degree of nodes, adj includes self loop
+		B = (adj-torch.eye(adj.shape[0]).cuda())-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
 		mod_loss=torch.trace(torch.matmul(torch.matmul(H_norm.t(),B),H_norm)/(4*m))
-		print("mod_loss",mod_loss)
+		# print("mod_loss",mod_loss)
 
 		return mod_loss
 
@@ -484,13 +484,13 @@ class GCNModelVAECE(nn.Module):
 		# z = torch.randn_like(z_mu) * torch.exp(z_sigma2_log / 2) + z_mu
 		z = self.reparameterize(mu,logvar)
 
-		# mod_loss=self.modularity_loss(z,adj)
-		# gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
-		gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+		mod_loss=self.modularity_loss(z,adj)
+		gamma_c=torch.exp(torch.log(self.pi_.unsqueeze(0))+self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
+		# gamma_c=torch.exp(self.gaussian_pdfs_log(z,self.mu_c,self.log_sigma2_c))+det
 		# gamma_c  = self.cluster_choose(self.reparameterize(mu,logvar))
 		# print('gamma_c:',gamma_c)
 
-		# gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
+		gamma_c=gamma_c/(gamma_c.sum(1).view(-1,1))#batch_size*Clusters
 		# gamma_c=F.softmax(gamma_c)
 		# print('gamma_c normalized:',gamma_c)
 		# print('gamma_c argmax:',torch.argmax(gamma_c,1))
@@ -499,12 +499,12 @@ class GCNModelVAECE(nn.Module):
 		# gamma_c=torch.nn.functional.one_hot(torch.argmax(gamma_c,1),self.args.nClusters)
 
 		# self.pi_.data = (self.pi_/self.pi_.sum()).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
-		# self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
+		self.pi_.data = gamma_c.mean(0).data # prior need to be re-normalized? In GMM, prior is based on gamma_c:https://brilliant.org/wiki/gaussian-mixture-model/
 
 		# multiple gaussian priors for
-		# KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
+		KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1+self.log_sigma2_c.unsqueeze(0)-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1)-self.log_sigma2_c.unsqueeze(0))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2)/torch.exp(self.log_sigma2_c.unsqueeze(0)),2),1))
 		#single KLD_u
-		KLD_u_c= -0.5 / n_nodes * torch.mean(torch.sum(-1 - 2 * logvar + mu.pow(2) + logvar.exp().pow(2),1))
+		# KLD_u_c= -0.5 / n_nodes * torch.mean(torch.sum(-1 - 2 * logvar + mu.pow(2) + logvar.exp().pow(2),1))
 
 		# KLD_u_c=-(0.5/n_nodes)*torch.mean(torch.sum(gamma_c*torch.sum(-1-2*logvar.unsqueeze(1)+torch.exp(2*logvar.unsqueeze(1))+(mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2),1))
 		# temp_kld=-(0.5/n_nodes)*torch.sum((mu.unsqueeze(1)-self.mu_c.unsqueeze(0)).pow(2),2)
@@ -526,16 +526,26 @@ class GCNModelVAECE(nn.Module):
 		gamma_loss = -(1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1))
 		# gamma_loss = (1 / self.args.nClusters) * torch.mean(torch.sum(gamma_c*torch.log(gamma_c/self.pi_.unsqueeze(0)),1)) - (0.5 / self.args.hid_dim)*torch.mean(torch.sum(1+2*logvar,1))
 
-		#soft cluster assignment
+		# soft cluster assignment
+
 		Q = self.getSoftAssignments(z,self.mu_c,self.args.nClusters,self.args.hidden2,n_nodes)
+
 		P = self.calculateP(Q)
+		# if epoch ==0:
+			# P = self.calculateP(Q)
+
+		# if epoch!=0 and epoch%5==0:
+			# P = self.calculateP(Q)
+
 		soft_cluster_loss = self.getKLDivLossExpression(Q,P)
 
 		print("Soft cluster assignment",Counter(torch.argmax(Q,1).tolist()))
 
 		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a
-		return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -0.1*soft_cluster_loss
-		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, -10*mutual_dist,soft_cluster_loss
+		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -0.1*soft_cluster_loss
+		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -0.1*mutual_dist,-0.01*soft_cluster_loss
+		return [L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a, -gamma_loss, -mutual_dist,-0.01*soft_cluster_loss],[mu,logvar,mu_a,logvar_a,z]
+		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss, -0.1*soft_cluster_loss
 		# return L_rec_u , L_rec_a , -KLD_u_c ,-KLD_a , -gamma_loss,-mi_a
 		# return L_rec_u + L_rec_a + KLD_u_c + KLD_a + gamma_loss
 
@@ -594,9 +604,9 @@ class GCNModelVAECE(nn.Module):
 			pre = gmm.fit_predict(Z.cpu().detach().numpy())
 			print('Acc={:.4f}%'.format(cluster_acc(pre, Y)[0] * 100))
 
-			self.pi_.data = torch.from_numpy(gmm.weights_).float()
-			self.mu_c.data = torch.from_numpy(gmm.means_).float()
-			self.log_sigma2_c.data = torch.log(torch.from_numpy(gmm.covariances_).float())
+			self.pi_= torch.from_numpy(gmm.weights_).float().cuda()
+			self.mu_c = torch.from_numpy(gmm.means_).float().cuda()
+			self.log_sigma2_c = torch.log(torch.from_numpy(gmm.covariances_).float()).cuda()
 
 			torch.save(self.state_dict(), './pretrain_model_{}_{}.pk'.format(self.args.dataset,pre_epoch))
 		else:
@@ -749,6 +759,7 @@ class GCNModelVAECE(nn.Module):
 		# Function to calculate the desired distribution Q^2, for more details refer to DEC paper
 		f = Q.sum(dim=0)
 		pij_numerator = Q * Q
+		# pij_numerator = Q
 		pij_numerator = pij_numerator / f
 		normalizer_p = pij_numerator.sum(dim=1).reshape((Q.shape[0], 1))
 		P = pij_numerator / normalizer_p

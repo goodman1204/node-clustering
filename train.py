@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -101,8 +101,11 @@ def training(args):
 
 
     if args.cuda:
+        # drop features
         features_training = features_training.to_dense().cuda()
+        # features_training = drop_feature(features_training,1.0).cuda()
         adj_norm = adj_norm.to_dense().cuda()
+        # adj_norm = drop_edge(adj_norm,0.5).cuda()
         pos_weight_u = pos_weight_u.cuda()
         pos_weight_a = pos_weight_a.cuda()
         adj_label = adj_label.cuda()
@@ -156,7 +159,7 @@ def training(args):
         cost_val = []
         acc_val = []
         val_roc_score = []
-        lr_s=StepLR(optimizer1,step_size=30,gamma=0.95) # it seems that fix leanring rate is better
+        lr_s=StepLR(optimizer1,step_size=100,gamma=0.95) # it seems that fix leanring rate is better
 
         loss_list=None
         for epoch in range(args.epochs):
@@ -179,31 +182,62 @@ def training(args):
             elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
 
 
-                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-                loss_list = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+                # (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+
+                # soft cluster assignment
+
+                loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+
+                # z = model.reparameterize(mu_u,logvar_u)
+                # Q = model.getSoftAssignments(z,model.mu_c,args.nClusters,args.hidden2,n_nodes)
+
+                # if epoch ==0:
+                    # P = model.calculateP(Q)
+
+                # if epoch!=0 and epoch%5==0:
+                    # P = model.calculateP(Q)
+
+                # soft_cluster_loss = model.getKLDivLossExpression(Q,P)
+
+                # print("Soft cluster assignment",Counter(torch.argmax(Q,1).tolist()))
+                # loss_list.append(-0.01*soft_cluster_loss)
+
+                # if epoch <0.7*args.epochs:
+                    # loss =sum(loss_list[0:-1])
+                # else:
+                    # loss =sum(loss_list)
                 loss =sum(loss_list)
 
-                if epoch%10 <8:
-                    model.change_nn_grad_true()
+
+
+                # optimizer2.zero_grad()
+                # loss.backward()
+                # optimizer2.step()
+
+                if epoch%10 <7:
+                    # model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                     optimizer2.zero_grad()
                     loss.backward()
                     optimizer2.step()
                 else:
-                    model.change_nn_grad_false()
+                    # model.change_nn_grad_false()
                     model.change_cluster_grad_true()
                     optimizer2.zero_grad()
                     loss.backward()
                     optimizer2.step()
 
 
+            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
             lr_s.step()
 
             # model.check_gradient()
             # model.check_parameters()
 
-            # if (epoch+1)%50==0:
+            # if (epoch+1)%100==0:
+                # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
+                # model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,pre)
                 # pre,gamma,z = model.predict(mu_u,logvar_u)
                 # model.plot_tsne(args.dataset,epoch,z,pre,'predict label')
                 # model.plot_tsne(args.dataset,epoch,z,Y,'true label')
@@ -299,7 +333,7 @@ def training(args):
         mean_accuracy.append(round(acc,4))
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
-        pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
+        # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
         model.plot_tsne(args.dataset,epoch,z.to('cpu'),tru,pre)
     else:
         pre=clustering_latent_space(mu_u.detach().numpy(),tru)

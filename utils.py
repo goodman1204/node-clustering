@@ -261,3 +261,17 @@ def clustering_evaluation(labels_true, labels):
             metrics.normalized_mutual_info_score(labels_true,labels), \
             purity_score(labels_true, labels)
 
+def drop_feature(feature_matrix,delta):
+    num_nodes, num_features = feature_matrix.shape
+    mask = torch.tensor(np.random.binomial(1,delta,[num_nodes,1]))
+
+    feature_matrix_dropped = feature_matrix*mask
+    return feature_matrix_dropped
+
+
+def drop_edge(adj,delta):
+    num_nodes, num_features = adj.shape
+    mask = torch.tensor(np.random.binomial(1,delta,[num_nodes,num_features]))
+
+    adj_dropped = adj*mask
+    return adj_dropped
