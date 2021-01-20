@@ -54,7 +54,7 @@ class GraphConvolutionSparse(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        input = F.dropout(input, self.dropout, self.training)
+        # input = F.dropout(input, self.dropout, self.training)
         support = torch.spmm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)

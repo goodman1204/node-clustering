@@ -159,9 +159,10 @@ def training(args):
         cost_val = []
         acc_val = []
         val_roc_score = []
-        lr_s=StepLR(optimizer1,step_size=100,gamma=0.95) # it seems that fix leanring rate is better
+        lr_s=StepLR(optimizer1,step_size=30,gamma=0.95) # it seems that fix leanring rate is better
 
         loss_list=None
+        pretrain_flag = False
         for epoch in range(args.epochs):
             t = time.time()
             model.train()
@@ -188,6 +189,10 @@ def training(args):
 
                 loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
 
+                pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+
+                H, C, V, ari, ami, nmi, purity  = clustering_evaluation(Y,pre)
+                print("purity, NMI:",purity,nmi)
                 # z = model.reparameterize(mu_u,logvar_u)
                 # Q = model.getSoftAssignments(z,model.mu_c,args.nClusters,args.hidden2,n_nodes)
 
@@ -202,30 +207,59 @@ def training(args):
                 # print("Soft cluster assignment",Counter(torch.argmax(Q,1).tolist()))
                 # loss_list.append(-0.01*soft_cluster_loss)
 
-                # if epoch <0.7*args.epochs:
-                    # loss =sum(loss_list[0:-1])
-                # else:
-                    # loss =sum(loss_list)
-                loss =sum(loss_list)
-
-
-
-                # optimizer2.zero_grad()
-                # loss.backward()
-                # optimizer2.step()
-
-                if epoch%10 <7:
+                if epoch <=0.2*args.epochs:
+                    loss =sum(loss_list[0:-1])
                     # model.change_nn_grad_true()
                     model.change_cluster_grad_false()
-                    optimizer2.zero_grad()
-                    loss.backward()
-                    optimizer2.step()
                 else:
-                    # model.change_nn_grad_false()
-                    model.change_cluster_grad_true()
-                    optimizer2.zero_grad()
-                    loss.backward()
-                    optimizer2.step()
+                    if pretrain_flag == False:
+                        pretrain_flag = True
+                        print('pre_train',pretrain_flag)
+                        from sklearn.mixture import GaussianMixture
+                        gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
+                        pre = gmm.fit_predict(z.cpu().detach().numpy())
+                        # print('Acc={:.4f}%'.format(cluster_acc(pre, Y)[0] * 100))
+                        H, C, V, ari, ami, nmi, purity  = clustering_evaluation(pre,Y)
+                        print("GMM purity, NMI:",purity,nmi)
+                        model.plot_tsne(args.dataset,epoch,z.to('cpu'),Y,pre)
+                        model.init_clustering_params(gmm)
+
+                    loss =sum(loss_list)
+
+                    if epoch%10 <=8:
+                        model.change_nn_grad_true()
+                        model.change_cluster_grad_false()
+                        # optimizer2.zero_grad()
+                        # loss.backward()
+                        # optimizer2.step()
+                    else:
+                        # model.change_nn_grad_false()
+                        model.change_cluster_grad_true()
+                        # optimizer2.zero_grad()
+                        # loss.backward()
+                        # optimizer2.step()
+                        model.change_nn_grad_false()
+                    # model.change_cluster_grad_true()
+                # loss =sum(loss_list)
+
+                optimizer2.zero_grad()
+                loss.backward()
+                optimizer2.step()
+
+
+
+                # if epoch%10 <=7:
+                    # # model.change_nn_grad_true()
+                    # model.change_cluster_grad_false()
+                    # optimizer2.zero_grad()
+                    # loss.backward()
+                    # optimizer2.step()
+                # else:
+                    # # model.change_nn_grad_false()
+                    # model.change_cluster_grad_true()
+                    # optimizer2.zero_grad()
+                    # loss.backward()
+                    # optimizer2.step()
 
 
             (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
@@ -319,7 +353,10 @@ def training(args):
             # recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
 
 
-        pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
+        pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+        print('gamma_c:',gamma_c)
+        print('gamma_c argmax:',np.argmax(gamma_c,1))
+        print('gamma_c argmax counter:',Counter(np.argmax(gamma_c,1).tolist()))
 
         H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
@@ -386,7 +423,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(1)
+        torch.cuda.set_device(0)
         torch.cuda.manual_seed(args.seed)
     random.seed(args.seed)
     np.random.seed(args.seed)
