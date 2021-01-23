@@ -54,7 +54,7 @@ class GraphConvolutionSparse(Module):
         torch.nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, adj):
-        # input = F.dropout(input, self.dropout, self.training)
+        input = F.dropout(input, self.dropout, self.training)
         support = torch.spmm(input, self.weight)
         output = torch.spmm(adj, support)
         output = self.act(output)
@@ -326,7 +326,7 @@ class SpGAT(nn.Module):
                                              concat=False)
 
     def forward(self, x, adj):
-        # x = F.dropout(x, self.dropout, training=self.training)
+        x = F.dropout(x, self.dropout, training=self.training)
         x = torch.cat([att(x, adj) for att in self.attentions], dim=1)
         # x = F.dropout(x, self.dropout, training=self.training)
         x = self.out_att(x, adj)

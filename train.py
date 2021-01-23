@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -29,6 +29,11 @@ def training(args):
     adj_init, features, labels, idx_train, idx_val, idx_test = load_data(args.dataset)
     Y = np.argmax(labels,1) # labels is in one-hot format
 
+    # print("find motif")
+    # motif_matrix=find_motif(adj_init,args.dataset)
+
+    # adj_init=sp.lil_matrix(motif_matrix).multiply(adj_init)
+
     # Store original adjacency matrix (without diagonal entries) for later
     adj_init = adj_init- sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
     adj_init.eliminate_zeros()
@@ -40,8 +45,6 @@ def training(args):
 
     # find motif 3 nodes
 
-    # motif_matrix=find_motif(adj_init,args.dataset)
-    # print("find motif")
 
 
     args.nClusters=len(set(Y))
@@ -98,14 +101,16 @@ def training(args):
     mean_nmi=[]
     mean_purity=[]
     mean_accuracy=[]
+    mean_f1=[]
+    mean_precision=[]
 
 
+    # adj_norm = drop_edge(adj_norm,Y)
     if args.cuda:
         # drop features
         features_training = features_training.to_dense().cuda()
         # features_training = drop_feature(features_training,1.0).cuda()
         adj_norm = adj_norm.to_dense().cuda()
-        # adj_norm = drop_edge(adj_norm,0.5).cuda()
         pos_weight_u = pos_weight_u.cuda()
         pos_weight_a = pos_weight_a.cuda()
         adj_label = adj_label.cuda()
@@ -120,6 +125,10 @@ def training(args):
     pos_weight_a = Variable(pos_weight_a)
 
     for r in range(args.num_run):
+
+        # random.seed(args.seed)
+        # np.random.seed(args.seed)
+        # torch.manual_seed(args.seed)
 
         model = None
         if args.model == 'gcn_ae':
@@ -159,7 +168,7 @@ def training(args):
         cost_val = []
         acc_val = []
         val_roc_score = []
-        lr_s=StepLR(optimizer1,step_size=30,gamma=0.95) # it seems that fix leanring rate is better
+        lr_s=StepLR(optimizer1,step_size=30,gamma=1) # it seems that fix leanring rate is better
 
         loss_list=None
         pretrain_flag = False
@@ -191,8 +200,8 @@ def training(args):
 
                 pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
 
-                H, C, V, ari, ami, nmi, purity  = clustering_evaluation(Y,pre)
-                print("purity, NMI:",purity,nmi)
+                H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
+                print("purity, NMI f1_score:",purity,nmi,f1_score)
                 # z = model.reparameterize(mu_u,logvar_u)
                 # Q = model.getSoftAssignments(z,model.mu_c,args.nClusters,args.hidden2,n_nodes)
 
@@ -207,7 +216,7 @@ def training(args):
                 # print("Soft cluster assignment",Counter(torch.argmax(Q,1).tolist()))
                 # loss_list.append(-0.01*soft_cluster_loss)
 
-                if epoch <=0.2*args.epochs:
+                if epoch <=200:
                     loss =sum(loss_list[0:-1])
                     # model.change_nn_grad_true()
                     model.change_cluster_grad_false()
@@ -219,7 +228,7 @@ def training(args):
                         gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
                         pre = gmm.fit_predict(z.cpu().detach().numpy())
                         # print('Acc={:.4f}%'.format(cluster_acc(pre, Y)[0] * 100))
-                        H, C, V, ari, ami, nmi, purity  = clustering_evaluation(pre,Y)
+                        H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
                         print("GMM purity, NMI:",purity,nmi)
                         model.plot_tsne(args.dataset,epoch,z.to('cpu'),Y,pre)
                         model.init_clustering_params(gmm)
@@ -354,11 +363,19 @@ def training(args):
 
 
         pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+        with open("save_prediction.log",'w') as wp:
+            for label in pre:
+                wp.write("{}\n".format(label))
+
         print('gamma_c:',gamma_c)
         print('gamma_c argmax:',np.argmax(gamma_c,1))
         print('gamma_c argmax counter:',Counter(np.argmax(gamma_c,1).tolist()))
 
-        H, C, V, ari, ami, nmi, purity  = clustering_evaluation(tru,pre)
+        new_prediction=choose_cluster_votes(adj_label,pre)
+        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,new_prediction)
+        print("new prediction nmi",nmi)
+
+        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
@@ -368,6 +385,8 @@ def training(args):
         mean_nmi.append(round(nmi,4))
         mean_purity.append(round(purity,4))
         mean_accuracy.append(round(acc,4))
+        mean_f1.append(round(f1_score,4))
+        mean_precision.append(round(precision,4))
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
         # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
@@ -398,6 +417,8 @@ def training(args):
     print('Normalized Mutual Information:{}\t mean:{}\t std:{}\n'.format(mean_nmi,round(np.mean(mean_nmi),4),round(np.std(mean_nmi),4)))
     print('Purity:{}\t mean:{}\t std:{}\n'.format(mean_purity,round(np.mean(mean_purity),4),round(np.std(mean_purity),4)))
     print('Accuracy:{}\t mean:{}\t std:{}\n'.format(mean_accuracy,round(np.mean(mean_accuracy),4),round(np.std(mean_accuracy),4)))
+    print('F1-score:{}\t mean:{}\t std:{}\n'.format(mean_f1,round(np.mean(mean_f1),4),round(np.std(mean_f1),4)))
+    print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
     print("True label distribution:{}".format(tru))
     print(Counter(tru))
     print("Predicted label distribution:{}".format(pre))
@@ -406,12 +427,12 @@ def training(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
-    parser.add_argument('--seed', type=int, default=42, help='Random seed.')
+    parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
-    parser.add_argument('--dropout', type=float, default=0.2, help='Dropout rate (1 - keep probability).')
+    parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
@@ -424,7 +445,8 @@ if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
         torch.cuda.set_device(0)
-        torch.cuda.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
+        # torch.cuda.manual_seed(args.seed)
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
     training(args)

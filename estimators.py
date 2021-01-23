@@ -19,7 +19,7 @@ def logmeanexp_nodiag(x, dim=None, device='cpu'):
         dim = (0, 1)
 
     logsumexp = torch.logsumexp(
-        x - torch.diag(np.inf * torch.ones(batch_size).to(device)), dim=dim)
+        x - torch.diag(np.inf * torch.ones(batch_size)).to('cuda'), dim=dim)
 
     try:
         if len(dim) == 1:
@@ -28,7 +28,7 @@ def logmeanexp_nodiag(x, dim=None, device='cpu'):
             num_elem = batch_size * (batch_size - 1.)
     except ValueError:
         num_elem = batch_size - 1
-    return logsumexp - torch.log(torch.tensor(num_elem)).to(device)
+    return logsumexp - torch.log(torch.tensor(num_elem))
 
 
 def tuba_lower_bound(scores, log_baseline=None):

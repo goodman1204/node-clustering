@@ -4,10 +4,12 @@ import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
-from sklearn.metrics import roc_auc_score, average_precision_score
+from sklearn.metrics import roc_auc_score, average_precision_score,f1_score,precision_score
 from sklearn import metrics
 import itertools
 import os
+from collections import Counter
+from munkres import Munkres, print_matrix
 
 def find_motif(adj, dataset_name):
 
@@ -26,15 +28,19 @@ def find_motif(adj, dataset_name):
 
         N = g.number_of_nodes()
         motif_matrix = np.zeros((N,N))
-        for sub_nodes in itertools.combinations(g.nodes(),len(target.nodes())):
-            subg = g.subgraph(sub_nodes)
-            if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
-                for e in subg.edges():
-                    motif_matrix[e[0]][e[1]]=1
-                    motif_matrix[e[1]][e[0]]=1
+
+        for node in g.nodes():
+            print(node)
+            neigbours = [i for i in g.neighbors(node)]
+            for sub_nodes in itertools.combinations(neigbours,len(target.nodes())):
+                subg = g.subgraph(sub_nodes)
+                if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
+                    for e in subg.edges():
+                        motif_matrix[e[0]][e[1]]=1
+                        motif_matrix[e[1]][e[0]]=1
 
         with open(path,'wb') as wp:
-            np.save(wp,sp.coo_matrix(motif_matrix))
+            np.save(wp,motif_matrix)
 
     return motif_matrix
 
@@ -259,7 +265,9 @@ def clustering_evaluation(labels_true, labels):
             metrics.adjusted_rand_score(labels_true, labels),\
             metrics.adjusted_mutual_info_score(labels_true, labels), \
             metrics.normalized_mutual_info_score(labels_true,labels), \
-            purity_score(labels_true, labels)
+            purity_score(labels_true, labels),\
+            f1_score(labels_true,labels,average='macro'),\
+            precision_score(labels_true,labels,average='macro')
 
 def drop_feature(feature_matrix,delta):
     num_nodes, num_features = feature_matrix.shape
@@ -269,9 +277,45 @@ def drop_feature(feature_matrix,delta):
     return feature_matrix_dropped
 
 
-def drop_edge(adj,delta):
-    num_nodes, num_features = adj.shape
-    mask = torch.tensor(np.random.binomial(1,delta,[num_nodes,num_features]))
+def drop_edge(adj,Y,delta=1):
 
-    adj_dropped = adj*mask
-    return adj_dropped
+    num_nodes, num_features = adj.shape
+
+    # mask = torch.tensor(np.random.binomial(1,delta,[num_nodes,num_features]))
+
+    for row in range(num_nodes):
+        print(row)
+        for col in range(num_nodes):
+            if row!=col and adj[row,col]==1:
+                if Y[row]!=Y[col]:
+                    adj[row,col]=0
+                    adj[col,row]=0
+
+    print("after drop edge: edge number",adj.sum())
+    return adj
+
+def choose_cluster_votes(adj,prediction):
+
+    n_nodes = adj.shape[0]
+
+    new_prediction=[]
+    for i in range(n_nodes):
+        labels=prediction[(adj[i]>=1).tolist()]
+        labels_max = Counter(labels)
+
+        max_value = 0
+        candicate_label =0
+        for key,value in labels_max.items():
+            if value > max_value:
+                candicate_label = key
+                max_value = value
+        new_prediction.append(candicate_label)
+
+    print("new prediction duplicate rate:",np.sum(np.array(new_prediction)==prediction)/len(prediction))
+    return np.array(new_prediction)
+
+
+
+
+
+
