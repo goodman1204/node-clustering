@@ -9,7 +9,7 @@ import torch
 from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
-from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE,NEC
+from model import DAEGCE
 from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
@@ -119,7 +119,7 @@ def training(args):
         # np.random.seed(args.seed)
         # torch.manual_seed(args.seed)
 
-        model = NEC(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = DAEGCE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
         if args.cuda:
             model.cuda()
@@ -149,7 +149,7 @@ def training(args):
             print("purity, NMI, f1_score:",purity,nmi,f1_score)
 
             if epoch <=200:
-                loss =loss_list[0]-0.1*loss_list[1] # when epoch < T1=200, only update reconstruction loss and modularity loss, the modularity loss need to be maximized (with minus symbol)
+                loss =loss_list[0] # when epoch < T1=200, only update reconstruction loss and modularity loss, the modularity loss need to be maximized (with minus symbol)
             else:
                 if pretrain_flag == False:
                     pretrain_flag = True
@@ -161,7 +161,7 @@ def training(args):
                     plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
                     model.init_clustering_params_kmeans(kmeans)
 
-                loss =loss_list[0]-0.1*loss_list[1]+0.1*loss_list[2]
+                loss =loss_list[0]-10*loss_list[1]
 
 
             optimizer.zero_grad()
@@ -205,7 +205,7 @@ def training(args):
 
         pre,gamma_c = model.predict_soft_assignment(z)
 
-        with open("nec_{}_prediction.log".format(args.dataset),'w') as wp:
+        with open("./DAEGCE/{}_{}_prediction.log".format(args.model,args.dataset),'w') as wp:
             for label in pre:
                 wp.write("{}\n".format(label))
 
@@ -247,11 +247,11 @@ def training(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
-    parser.add_argument('--model', type=str, default='nec', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--model', type=str, default='DAEGCE', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
+    parser.add_argument('--hidden1', type=int, default=256, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.001, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')

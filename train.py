@@ -206,21 +206,12 @@ def training(args):
 
                     loss =sum(loss_list)
 
-                    # if epoch%10 <=8:
-                        # model.change_nn_grad_true()
-                        # model.change_cluster_grad_false()
-                        # # optimizer2.zero_grad()
-                        # # loss.backward()
-                        # # optimizer2.step()
-                    # else:
-                        # # model.change_nn_grad_false()
-                        # model.change_cluster_grad_true()
-                        # # optimizer2.zero_grad()
-                        # # loss.backward()
-                        # # optimizer2.step()
-                        # model.change_nn_grad_false()
-                    # # model.change_cluster_grad_true()
-                # # loss =sum(loss_list)
+                    if epoch%10 <=8:
+                        model.change_nn_grad_true()
+                        model.change_cluster_grad_false()
+                    else:
+                        model.change_nn_grad_false()
+                        model.change_cluster_grad_true()
 
             optimizer2.zero_grad()
             loss.backward()

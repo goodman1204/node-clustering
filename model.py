@@ -11,7 +11,7 @@ import numpy as np
 import os
 from tqdm import tqdm
 
-from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder
+from layers import GraphConvolution, GraphConvolutionSparse, Linear, InnerDecoder, InnerProductDecoder,SpGAT,GAT
 from utils import cluster_acc,clustering_evaluation
 
 from utils_smiles import *
@@ -71,12 +71,6 @@ class GCNModelVAE(nn.Module):
         eps = torch.randn_like(std)
         return eps.mul(std).add_(mu)
 
-        # if self.training:
-            # std = torch.exp(logvar)
-            # eps = torch.randn_like(std)
-            # return eps.mul(std).add_(mu)
-        # else:
-            # return mu
 
     def forward(self, x, adj):
 
@@ -456,6 +450,143 @@ class NEC(nn.Module):
         gamma=gamma_c.detach().cpu().numpy()
 
         return np.argmax(gamma,axis=1),gamma
+
+    def init_clustering_params_kmeans(self,km):
+
+        self.mu_c = torch.nn.Parameter(torch.from_numpy(km.cluster_centers_))
+
+class DAEGCE(nn.Module):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+        super(DAEGCE, self).__init__()
+
+
+        self.args = args
+        self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=4)
+        self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=4)
+        self.dc = InnerProductDecoder(dropout, act=lambda x: x)
+        # self.dc = InnerDecoder(dropout, act=lambda x: x) # should we use sigmoid
+
+        self.mu_c=nn.Parameter(torch.FloatTensor(args.nClusters,hidden_dim2).fill_(0.00),requires_grad=True)
+
+        torch.nn.init.xavier_normal_(self.mu_c)
+
+
+    def encoder(self, x, adj):
+        hidden1 = self.gc1(x, adj)
+        return self.gc2(hidden1, adj)
+
+    def decoder(self,z):
+        return self.dc(z)
+
+    def forward(self, x, adj):
+        z = self.encoder(x, adj)
+        return self.dc(z)
+
+
+    def change_cluster_grad_false(self):
+        for name, param in self.named_parameters():
+            if name in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=False
+
+    def change_cluster_grad_true(self):
+        for name, param in self.named_parameters():
+            if name in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=True
+
+
+    def change_nn_grad_false(self):
+        for name, param in self.named_parameters():
+            if name not in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=False
+
+    def change_nn_grad_true(self):
+        for name, param in self.named_parameters():
+            if name not in ['pi_','mu_c','log_sigma2_c']:
+                param.requires_grad=True
+
+    def loss(self,x,adj,labels, n_nodes, n_features, norm, pos_weight,L=1):
+
+        labels_sub_u = labels
+        norm_u = norm
+        pos_weight_u = pos_weight
+
+        z = self.encoder(x, adj)
+
+
+        pred_adj = self.decoder(z)
+        L_rec = norm_u * F.binary_cross_entropy_with_logits(pred_adj, labels_sub_u, pos_weight = pos_weight_u)
+
+
+        Q = self.getSoftAssignments(z,self.mu_c.cuda(),n_nodes)
+
+        P = self.calculateP(Q)
+        # if epoch ==0:
+            # P = self.calculateP(Q)
+
+        # if epoch!=0 and epoch%5==0:
+            # P = self.calculateP(Q)
+
+        # soft_cluster_loss = self.getKLDivLossExpression(Q,P)/(n_nodes*self.args.hidden2)
+        soft_cluster_loss = self.getKLDivLossExpression(Q,P)
+
+
+        return [L_rec,soft_cluster_loss],[z]
+
+
+    def predict_soft_assignment(self,z):
+
+        Q = self.getSoftAssignments(z,self.mu_c.cuda(),z.shape[0])
+        gamma_c = Q
+        gamma=gamma_c.detach().cpu().numpy()
+
+        return np.argmax(gamma,axis=1),gamma
+
+    def calculateP(self, Q):
+        # Function to calculate the desired distribution Q^2, for more details refer to DEC paper
+        f = Q.sum(dim=0)
+        pij_numerator = Q * Q
+        # pij_numerator = Q
+        pij_numerator = pij_numerator / f
+        normalizer_p = pij_numerator.sum(dim=1).reshape((Q.shape[0], 1))
+        P = pij_numerator / normalizer_p
+        return P
+
+    def getKLDivLossExpression(self, Q_expression, P_expression):
+        # Loss = KL Divergence between the two distributions
+        log_arg = P_expression / Q_expression
+        log_exp = torch.log(log_arg)
+        sum_arg = P_expression * log_exp
+        loss = torch.sum(sum_arg)
+        return loss
+
+    def getSoftAssignments(self,latent_space, cluster_centers, num_samples):
+        '''
+        Returns cluster membership distribution for each sample
+        :param latent_space: latent space representation of inputs
+        :param cluster_centers: the coordinates of cluster centers in latent space
+        :param num_clusters: total number of clusters
+        :param latent_space_dim: dimensionality of latent space
+        :param num_samples: total number of input samples
+        :return: soft assigment based on the equation qij = (1+|zi - uj|^2)^(-1)/sum_j'((1+|zi - uj'|^2)^(-1))
+        '''
+        # z_expanded = latent_space.reshape((num_samples, 1, latent_space_dim))
+        # z_expanded = T.tile(z_expanded, (1, num_clusters, 1))
+        # u_expanded = T.tile(cluster_centers, (num_samples, 1, 1))
+
+        # distances_from_cluster_centers = (z_expanded - u_expanded).norm(2, axis=2)
+        # qij_numerator = 1 + distances_from_cluster_centers * distances_from_cluster_centers
+        # qij_numerator = 1 / qij_numerator
+        # normalizer_q = qij_numerator.sum(axis=1).reshape((num_samples, 1))
+
+        # return qij_numerator / normalizer_q
+
+
+        distances_from_cluster_centers = (latent_space.unsqueeze(1)- cluster_centers.unsqueeze(0)).norm(2, dim=2)
+        qij_numerator = 1 + distances_from_cluster_centers * distances_from_cluster_centers
+        qij_numerator = 1 / qij_numerator
+        normalizer_q = qij_numerator.sum(dim=1).reshape((num_samples, 1))
+
+        return qij_numerator / normalizer_q
 
     def init_clustering_params_kmeans(self,km):
 
