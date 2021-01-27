@@ -319,11 +319,47 @@ def choose_cluster_votes(adj,prediction):
     return np.array(new_prediction)
 
 
+def plot_tsne_non_centers(dataset,model_name,epoch,z,true_label,pred_label):
+
+    tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
+    zs_tsne = tsne.fit_transform(z)
+
+    cluster_labels=set(true_label)
+    print(cluster_labels)
+    index_group= [np.array(true_label)==y for y in cluster_labels]
+    colors = cm.tab20(range(len(index_group)))
+
+    fig, ax = plt.subplots()
+    for index,c in zip(index_group,colors):
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+    ax.legend(cluster_labels)
+
+    # ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
+    plt.title('true label')
+    # ax.legend()
+    plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'true_label'))
+
+    cluster_labels=set(pred_label)
+    print(cluster_labels)
+    index_group= [np.array(pred_label)==y for y in cluster_labels]
+    colors = cm.tab10(range(len(index_group)))
+
+    fig, ax = plt.subplots()
+    for index,c in zip(index_group,colors):
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+
+    # for index,c in enumerate(colors):
+        # ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
+
+    ax.legend(cluster_labels)
+    plt.title('pred label')
+    # ax.legend()
+    plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'pred_label'))
 
 def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
 
     tsne = TSNE(n_components=2, init='pca',perplexity=50.0)
-    data = torch.cat([z,mu_c.to('cpu').float()],dim=0).detach().numpy()
+    data = torch.cat([z,mu_c],dim=0).detach().numpy()
     zs_tsne = tsne.fit_transform(data)
 
     cluster_labels=set(true_label)
@@ -357,6 +393,22 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
     plt.title('pred label')
     # ax.legend()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'pred_label'))
+
+def save_results(dataset,model,epoch,metrics_list):
+    '''
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    '''
+    metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision']
+    wp = open('./logs/{}_{}_{}'.format(model,dataset,epoch),'a')
+
+    for index,metric in enumerate(metrics_list):
+        wp.write("{}\t".format(metrics_name[index]))
+        for value in metric:
+            wp.write("{}\t".format(value))
+        wp.write("{}\t".format(np.mean(value)))
+        wp.write("{}\n".format(np.std(value)))
+
+    wp.close()
 
 
 

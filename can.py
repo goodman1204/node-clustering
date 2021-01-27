@@ -9,8 +9,8 @@ import torch
 from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
-from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE,NEC
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne
+from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -19,7 +19,6 @@ from collections import Counter
 import itertools
 import random
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import KMeans
 
 import warnings
 warnings.simplefilter("ignore")
@@ -33,8 +32,13 @@ def training(args):
     else:
         adj_init, features, Y= load_AN(args.dataset)
 
+    # print("find motif")
+    # motif_matrix=find_motif(adj_init,args.dataset)
+
+    # adj_init=sp.lil_matrix(motif_matrix).multiply(adj_init)
+
     # Store original adjacency matrix (without diagonal entries) for later
-    adj_init = adj_init - sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
+    adj_init = adj_init- sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
     adj_init.eliminate_zeros()
 
     assert adj_init.diagonal().sum()==0,"adj diagonal sum:{}, should be 0".format(adj_init.diagonal().sum())
@@ -42,6 +46,7 @@ def training(args):
     # assert check_symmetric(adj_init).sum()==n_nodes*n_nodes,"adj should be symmetric"
     print("imported graph edge number (without selfloop):{}".format((adj_init-adj_init.diagonal()).sum()/2))
 
+    # find motif 3 nodes
 
     args.nClusters=len(set(Y))
     # args.nClusters=1
@@ -101,8 +106,11 @@ def training(args):
     mean_precision=[]
 
 
+    # adj_norm = drop_edge(adj_norm,Y)
     if args.cuda:
-        features_training = features_training.to_dense().cuda() # it needs higher memory if to_dense
+        # drop features
+        features_training = features_training.to_dense().cuda()
+        # features_training = drop_feature(features_training,1.0).cuda()
         adj_norm = adj_norm.to_dense().cuda()
         pos_weight_u = pos_weight_u.cuda()
         pos_weight_a = pos_weight_a.cuda()
@@ -119,12 +127,15 @@ def training(args):
         # np.random.seed(args.seed)
         # torch.manual_seed(args.seed)
 
-        model = NEC(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args) # CAN will not use the clustering los of VAECE
+
+        # using GMM to pretrain the  clustering parameters
 
         if args.cuda:
             model.cuda()
 
-        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+
+        optimizer2 = optim.Adam(model.parameters(), lr=args.lr)
 
 
         hidden_emb_u = None
@@ -133,47 +144,29 @@ def training(args):
         cost_val = []
         acc_val = []
         val_roc_score = []
-        lr_s=StepLR(optimizer,step_size=30,gamma=1) # it seems that fix leanring rate is better
+        lr_s=StepLR(optimizer2,step_size=30,gamma=1) # it seems that fix leanring rate is better
 
         loss_list=None
         pretrain_flag = False
+
         for epoch in range(args.epochs):
             t = time.time()
+
             model.train()
+            loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+            loss =loss_list[0]+loss_list[1]+loss_list[2]+loss_list[3] # the first 4 losses is from can,no clustering loss involved
+            model.change_cluster_grad_false()
 
-            loss_list,[z]= model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-
-            pre, gamma = model.predict_soft_assignment(z)
-
-            H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
-            print("purity, NMI, f1_score:",purity,nmi,f1_score)
-
-            if epoch <=200:
-                loss =loss_list[0]-0.1*loss_list[1] # when epoch < T1=200, only update reconstruction loss and modularity loss, the modularity loss need to be maximized (with minus symbol)
-            else:
-                if pretrain_flag == False:
-                    pretrain_flag = True
-                    print('pre_train',pretrain_flag)
-                    kmeans= KMeans(n_clusters=args.nClusters)
-                    pre = kmeans.fit_predict(z.cpu().detach().numpy())
-                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
-                    print("kmeans purity, NMI:",purity,nmi)
-                    plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
-                    model.init_clustering_params_kmeans(kmeans)
-
-                loss =loss_list[0]-0.1*loss_list[1]+0.1*loss_list[2]
-
-
-            optimizer.zero_grad()
+            optimizer2.zero_grad()
             loss.backward()
-            optimizer.step()
-
-            recovered_u = model(features_training, adj_norm)
-
+            optimizer2.step()
             lr_s.step()
+
+            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
 
             correct_prediction_u = ((torch.sigmoid(recovered_u.to('cpu'))>=0.5)==adj_label.type(torch.LongTensor))
+            # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
 
             accuracy = torch.mean(correct_prediction_u*1.0)
 
@@ -186,10 +179,11 @@ def training(args):
 
             tru=Y
 
+
             print("Epoch:", '%04d' % (epoch + 1),
                 "LR={:.4f}".format(lr_s.get_last_lr()[0]),
                   "train_loss_total=", "{:.5f}".format(loss.item()),
-                  "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
+                  "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list[0:4]]),
                   # "log_lik=", "{:.5f}".format(cost.item()),
                   # "KL_u=", "{:.5f}".format(KLD_u.item()),
                   # "KL_a=", "{:.5f}".format(KLD_a.item()),
@@ -203,15 +197,12 @@ def training(args):
 
         print("Optimization Finished!")
 
-        pre,gamma_c = model.predict_soft_assignment(z)
+        pre, mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
 
-        with open("nec_{}_prediction.log".format(args.dataset),'w') as wp:
+        with open("save_prediction.log",'w') as wp:
             for label in pre:
                 wp.write("{}\n".format(label))
-
-        print('gamma_c:',gamma_c)
-        print('gamma_c argmax:',np.argmax(gamma_c,1))
-        print('gamma_c argmax counter:',Counter(np.argmax(gamma_c,1).tolist()))
 
         H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
@@ -226,8 +217,21 @@ def training(args):
         mean_f1.append(round(f1_score,4))
         mean_precision.append(round(precision,4))
 
-        plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,tru,pre)
 
+        # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
+        # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
+        # np.save(embedding_node_var_result_file, logvar_u.data.numpy())
+        # np.save(embedding_attr_var_result_file, logvar_a.data.numpy())
+
+        # roc_score, ap_score = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, test_edges, test_edges_false)
+        # roc_score_a, ap_score_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, test_feas, test_feas_false)
+
+        # print('Test edge ROC score: ' + str(roc_score))
+        # print('Test edge AP score: ' + str(ap_score))
+        # print('Test attr ROC score: ' + str(roc_score_a))
+        # print('Test attr AP score: ' + str(ap_score_a))
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    save_results(args.dataset,args.model,args.epochs,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -247,12 +251,12 @@ def training(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
-    parser.add_argument('--model', type=str, default='nec', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--model', type=str, default='can', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
-    parser.add_argument('--lr', type=float, default=0.001, help='Initial aearning rate.')
+    parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
+    parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)

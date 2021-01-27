@@ -9,8 +9,8 @@ import torch
 from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
-from model import DAEGCE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne
+from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge, choose_cluster_votes, save_results, plot_tsne_non_centers
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -19,7 +19,7 @@ from collections import Counter
 import itertools
 import random
 from sklearn.mixture import GaussianMixture
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans,SpectralClustering
 
 import warnings
 warnings.simplefilter("ignore")
@@ -33,8 +33,9 @@ def training(args):
     else:
         adj_init, features, Y= load_AN(args.dataset)
 
+
     # Store original adjacency matrix (without diagonal entries) for later
-    adj_init = adj_init - sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
+    adj_init = adj_init- sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
     adj_init.eliminate_zeros()
 
     assert adj_init.diagonal().sum()==0,"adj diagonal sum:{}, should be 0".format(adj_init.diagonal().sum())
@@ -42,6 +43,7 @@ def training(args):
     # assert check_symmetric(adj_init).sum()==n_nodes*n_nodes,"adj should be symmetric"
     print("imported graph edge number (without selfloop):{}".format((adj_init-adj_init.diagonal()).sum()/2))
 
+    # find motif 3 nodes
 
     args.nClusters=len(set(Y))
     # args.nClusters=1
@@ -100,18 +102,7 @@ def training(args):
     mean_f1=[]
     mean_precision=[]
 
-
-    if args.cuda:
-        features_training = features_training.to_dense().cuda() # it needs higher memory if to_dense
-        adj_norm = adj_norm.to_dense().cuda()
-        pos_weight_u = pos_weight_u.cuda()
-        pos_weight_a = pos_weight_a.cuda()
-        adj_label = adj_label.cuda()
-        features_label = features_label.cuda()
-
-    features_training, adj_norm = Variable(features_training), Variable(adj_norm)
-    pos_weight_u = Variable(pos_weight_u)
-    pos_weight_a = Variable(pos_weight_a)
+    features_training = features_training.to_dense()
 
     for r in range(args.num_run):
 
@@ -119,102 +110,17 @@ def training(args):
         # np.random.seed(args.seed)
         # torch.manual_seed(args.seed)
 
-        model = DAEGCE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        if args.model == 'kmeans':
+            model = KMeans(n_clusters=args.nClusters)
+        elif args.model == "gmm":
+            model = GaussianMixture(n_components=args.nClusters)
+        elif args.model == 'sc':
+            model = SpectralClustering(n_clusters=args.nClusters)
 
-        if args.cuda:
-            model.cuda()
+        pre = model.fit_predict(features_training)
 
-        optimizer = optim.Adam(model.parameters(), lr=args.lr)
-
-
-        hidden_emb_u = None
-        hidden_emb_a = None
-
-        cost_val = []
-        acc_val = []
-        val_roc_score = []
-        lr_s=StepLR(optimizer,step_size=30,gamma=1) # it seems that fix leanring rate is better
-
-        loss_list=None
-        pretrain_flag = False
-        for epoch in range(args.epochs):
-            t = time.time()
-            model.train()
-
-            loss_list,[z]= model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-
-            pre, gamma = model.predict_soft_assignment(z)
-
-            H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
-            print("purity, NMI, f1_score:",purity,nmi,f1_score)
-
-            if epoch <=200:
-                loss =loss_list[0] # when epoch < T1=200, only update reconstruction loss and modularity loss, the modularity loss need to be maximized (with minus symbol)
-            else:
-                if pretrain_flag == False:
-                    pretrain_flag = True
-                    print('pre_train',pretrain_flag)
-                    kmeans= KMeans(n_clusters=args.nClusters)
-                    pre = kmeans.fit_predict(z.cpu().detach().numpy())
-                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
-                    print("kmeans purity, NMI:",purity,nmi)
-                    plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
-                    model.init_clustering_params_kmeans(kmeans)
-
-                loss =loss_list[0]-10*loss_list[1]
-
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-            recovered_u = model(features_training, adj_norm)
-
-            lr_s.step()
-
-
-            correct_prediction_u = ((torch.sigmoid(recovered_u.to('cpu'))>=0.5)==adj_label.type(torch.LongTensor))
-
-            accuracy = torch.mean(correct_prediction_u*1.0)
-
-
-            #clustering#############
-            pre=[]
-            tru=[]
-            gamma = None
-
-
-            tru=Y
-
-            print("Epoch:", '%04d' % (epoch + 1),
-                "LR={:.4f}".format(lr_s.get_last_lr()[0]),
-                  "train_loss_total=", "{:.5f}".format(loss.item()),
-                  "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
-                  # "log_lik=", "{:.5f}".format(cost.item()),
-                  # "KL_u=", "{:.5f}".format(KLD_u.item()),
-                  # "KL_a=", "{:.5f}".format(KLD_a.item()),
-                  # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
-                  # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
-                  # "val_edge_ap=", "{:.5f}".format(ap_curr),
-                  # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
-                  # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - t))
-
-        print("Optimization Finished!")
-
-        pre,gamma_c = model.predict_soft_assignment(z)
-
-        with open("./DAEGCE/{}_{}_prediction.log".format(args.model,args.dataset),'w') as wp:
-            for label in pre:
-                wp.write("{}\n".format(label))
-
-        print('gamma_c:',gamma_c)
-        print('gamma_c argmax:',np.argmax(gamma_c,1))
-        print('gamma_c argmax counter:',Counter(np.argmax(gamma_c,1).tolist()))
-
-        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,pre)
-        acc = cluster_acc(pre,tru)[0]*100
+        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(Y,pre)
+        acc = cluster_acc(pre,Y)[0]*100
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
         mean_v.append(round(V,4))
@@ -226,8 +132,10 @@ def training(args):
         mean_f1.append(round(f1_score,4))
         mean_precision.append(round(precision,4))
 
-        plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,tru,pre)
 
+    plot_tsne_non_centers(args.dataset,args.model,args.epochs,features_training,Y,pre)
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    save_results(args.dataset,args.model,args.epochs,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -240,19 +148,19 @@ def training(args):
     print('Accuracy:{}\t mean:{}\t std:{}\n'.format(mean_accuracy,round(np.mean(mean_accuracy),4),round(np.std(mean_accuracy),4)))
     print('F1-score:{}\t mean:{}\t std:{}\n'.format(mean_f1,round(np.mean(mean_f1),4),round(np.std(mean_f1),4)))
     print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
-    print("True label distribution:{}".format(tru))
-    print(Counter(tru))
+    print("True label distribution:{}".format(Y))
+    print(Counter(Y))
     print("Predicted label distribution:{}".format(pre))
     print(Counter(pre))
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
-    parser.add_argument('--model', type=str, default='DAEGCE', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--model', type=str, default='kmeans', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=256, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
-    parser.add_argument('--lr', type=float, default=0.001, help='Initial aearning rate.')
+    parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)

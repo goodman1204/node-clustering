@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -129,17 +129,9 @@ def training(args):
         # np.random.seed(args.seed)
         # torch.manual_seed(args.seed)
 
-        model = None
-        if args.model == 'gcn_ae':
-                model = GCNModelAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
-        elif args.model == 'gcn_vae':
-                model = GCNModelVAE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
-        elif args.model == 'gcn_vaecd':
-                model = GCNModelVAECD(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
-        elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-                model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
-                # using GMM to pretrain the  clustering parameters
+        # using GMM to pretrain the  clustering parameters
 
         if args.cuda:
             model.cuda()
@@ -161,63 +153,53 @@ def training(args):
         for epoch in range(args.epochs):
             t = time.time()
             model.train()
+            # (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
-            if args.model =='gcn_vaecd':
-                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
+            # soft cluster assignment
+
+            loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
+
+            pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+
+            H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
+            print("purity, NMI f1_score:",purity,nmi,f1_score)
+
+            if epoch <=200:
+                loss =sum(loss_list[0:-1])
+                # model.change_nn_grad_true()
+                model.change_cluster_grad_false()
+            else:
+                if pretrain_flag == False:
+                    pretrain_flag = True
+                    print('pre_train',pretrain_flag)
+                    gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
+                    pre = gmm.fit_predict(z.cpu().detach().numpy())
+                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
+                    print("GMM purity, NMI:",purity,nmi)
+                    plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    model.init_clustering_params(gmm)
+
                 loss =sum(loss_list)
 
-            elif args.model == 'gcn_ae':
-                recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
-                loss_list = model.loss(recovered_u,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                loss =sum(loss_list)
-            elif args.model == 'gcn_vae':
-                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-                loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                loss =sum(loss_list)
-
-            elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-
-                # (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
-
-                # soft cluster assignment
-
-                loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
-
-                pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
-
-                H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
-                print("purity, NMI f1_score:",purity,nmi,f1_score)
-
-                if epoch <=200:
-                    loss =sum(loss_list[0:-1])
-                    # model.change_nn_grad_true()
+                if epoch%10 <=8:
+                    model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                 else:
-                    if pretrain_flag == False:
-                        pretrain_flag = True
-                        print('pre_train',pretrain_flag)
-                        gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
-                        pre = gmm.fit_predict(z.cpu().detach().numpy())
-                        H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
-                        print("GMM purity, NMI:",purity,nmi)
-                        plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
-                        model.init_clustering_params(gmm)
-
-                    loss =sum(loss_list)
-
-                    if epoch%10 <=8:
-                        model.change_nn_grad_true()
-                        model.change_cluster_grad_false()
-                    else:
-                        model.change_nn_grad_false()
-                        model.change_cluster_grad_true()
+                    model.change_nn_grad_false()
+                    model.change_cluster_grad_true()
 
             optimizer2.zero_grad()
             loss.backward()
             optimizer2.step()
 
-            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+            if args.model =='gcn_vaecd':
+                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+            elif args.model == 'gcn_ae':
+                recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
+            elif args.model == 'gcn_vae':
+                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
+            elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
+                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
             lr_s.step()
 
@@ -284,9 +266,10 @@ def training(args):
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
         # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
-        plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
     else:
         pre=clustering_latent_space(mu_u.detach().numpy(),tru)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
         # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
@@ -300,7 +283,8 @@ def training(args):
         # print('Test edge AP score: ' + str(ap_score))
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
-
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    save_results(args.dataset,args.model,args.epochs,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -342,5 +326,5 @@ if __name__ == '__main__':
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)
-    # torch.manual_seed(args.seed)
+    torch.manual_seed(args.seed)
     training(args)
