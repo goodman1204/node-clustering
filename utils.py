@@ -4,7 +4,7 @@ import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
-from sklearn.metrics import roc_auc_score, average_precision_score,f1_score,precision_score
+from sklearn.metrics import roc_auc_score, average_precision_score,f1_score,precision_score,recall_score
 from sklearn import metrics
 import itertools
 import os
@@ -14,6 +14,7 @@ from munkres import Munkres, print_matrix
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from scipy.stats import entropy
 
 def find_motif(adj, dataset_name):
 
@@ -270,8 +271,9 @@ def clustering_evaluation(labels_true, labels):
             metrics.adjusted_mutual_info_score(labels_true, labels), \
             metrics.normalized_mutual_info_score(labels_true,labels), \
             purity_score(labels_true, labels),\
-            f1_score(labels_true,labels,average='macro'),\
-            precision_score(labels_true,labels,average='macro')
+            f1_score(labels_true,labels,average='weighted'),\
+            precision_score(labels_true,labels,average='weighted'),\
+            recall_score(labels_true,labels,average='weighted')
 
 def drop_feature(feature_matrix,delta):
     num_nodes, num_features = feature_matrix.shape
@@ -398,17 +400,40 @@ def save_results(dataset,model,epoch,metrics_list):
     '''
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
     '''
-    metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision']
+    metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision','recall','entropy']
     wp = open('./logs/{}_{}_{}'.format(model,dataset,epoch),'a')
+    wp.write("\n\n")
 
     for index,metric in enumerate(metrics_list):
         wp.write("{}\t".format(metrics_name[index]))
         for value in metric:
             wp.write("{}\t".format(value))
-        wp.write("{}\t".format(np.mean(value)))
-        wp.write("{}\n".format(np.std(value)))
+        wp.write("{}\t".format(np.mean(metric)))
+        wp.write("{}\n".format(np.std(metric)))
 
     wp.close()
+
+def entropy_metric(tru,pre):
+
+    size = len(tru)
+    unique_labels = len(set(tru))
+    tru_d = []
+    pre_d = []
+    tru_s= Counter(tru)
+    pre_s = Counter(pre)
+    print(tru_s)
+    print(pre_s)
+
+    for i in range(unique_labels):
+        tru_d.append(tru_s[i]/size)
+        pre_d.append( pre_s[i]/size)
+
+    print("label distribution for entropy")
+    print(tru_d)
+    print(pre_d)
+
+    return entropy(tru_d,pre_d)
+
 
 
 

@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results,entropy_metric
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -19,6 +19,7 @@ from collections import Counter
 import itertools
 import random
 from sklearn.mixture import GaussianMixture
+from hungrian import label_mapping
 
 import warnings
 warnings.simplefilter("ignore")
@@ -104,6 +105,8 @@ def training(args):
     mean_accuracy=[]
     mean_f1=[]
     mean_precision=[]
+    mean_recall = []
+    mean_entropy = []
 
 
     # adj_norm = drop_edge(adj_norm,Y)
@@ -200,11 +203,16 @@ def training(args):
         pre, mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
         plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
 
+        print("label mapping using Hungarian algorithm ")
+        pre = label_mapping(tru,pre)
+
+
         with open("save_prediction.log",'w') as wp:
             for label in pre:
                 wp.write("{}\n".format(label))
 
-        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,pre)
+        H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
+        entropy = entropy_metric(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
@@ -216,6 +224,8 @@ def training(args):
         mean_accuracy.append(round(acc,4))
         mean_f1.append(round(f1_score,4))
         mean_precision.append(round(precision,4))
+        mean_recall.append(round(recall,4))
+        mean_entropy.append(round(entropy,4))
 
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
@@ -230,7 +240,7 @@ def training(args):
         # print('Test edge AP score: ' + str(ap_score))
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
-    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
     save_results(args.dataset,args.model,args.epochs,metrics_list)
 
     ###### Report Final Results ######
@@ -244,6 +254,8 @@ def training(args):
     print('Accuracy:{}\t mean:{}\t std:{}\n'.format(mean_accuracy,round(np.mean(mean_accuracy),4),round(np.std(mean_accuracy),4)))
     print('F1-score:{}\t mean:{}\t std:{}\n'.format(mean_f1,round(np.mean(mean_f1),4),round(np.std(mean_f1),4)))
     print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
+    print('recall_score:{}\t mean:{}\t std:{}\n'.format(mean_recall,round(np.mean(mean_recall),4),round(np.std(mean_recall),4)))
+    print('entropy:{}\t mean:{}\t std:{}\n'.format(mean_entropy,round(np.mean(mean_entropy),4),round(np.std(mean_entropy),4)))
     print("True label distribution:{}".format(tru))
     print(Counter(tru))
     print("Predicted label distribution:{}".format(pre))

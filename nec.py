@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE,NEC
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results,entropy_metric
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -20,6 +20,7 @@ import itertools
 import random
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
+from hungrian import label_mapping
 
 import warnings
 warnings.simplefilter("ignore")
@@ -99,6 +100,8 @@ def training(args):
     mean_accuracy=[]
     mean_f1=[]
     mean_precision=[]
+    mean_recall = []
+    mean_entropy = []
 
 
     if args.cuda:
@@ -145,7 +148,7 @@ def training(args):
 
             pre, gamma = model.predict_soft_assignment(z)
 
-            H, C, V, ari, ami, nmi, purity, f1_score,precision = clustering_evaluation(Y,pre)
+            H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
             print("purity, NMI, f1_score:",purity,nmi,f1_score)
 
             if epoch <=200:
@@ -156,9 +159,9 @@ def training(args):
                     print('pre_train',pretrain_flag)
                     kmeans= KMeans(n_clusters=args.nClusters)
                     pre = kmeans.fit_predict(z.cpu().detach().numpy())
-                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score  = clustering_evaluation(pre,Y)
+                    H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
                     print("kmeans purity, NMI:",purity,nmi)
-                    plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,Y,pre)
+                    plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params_kmeans(kmeans)
 
                 loss =loss_list[0]-0.1*loss_list[1]+0.1*loss_list[2]
@@ -205,6 +208,9 @@ def training(args):
 
         pre,gamma_c = model.predict_soft_assignment(z)
 
+        print("label mapping using Hungarian algorithm ")
+        pre = label_mapping(tru,pre)
+
         with open("nec_{}_prediction.log".format(args.dataset),'w') as wp:
             for label in pre:
                 wp.write("{}\n".format(label))
@@ -213,7 +219,8 @@ def training(args):
         print('gamma_c argmax:',np.argmax(gamma_c,1))
         print('gamma_c argmax counter:',Counter(np.argmax(gamma_c,1).tolist()))
 
-        H, C, V, ari, ami, nmi, purity,f1_score,precision= clustering_evaluation(tru,pre)
+        H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
+        entropy = entropy_metric(tru,pre)
         acc = cluster_acc(pre,tru)[0]*100
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
@@ -225,11 +232,13 @@ def training(args):
         mean_accuracy.append(round(acc,4))
         mean_f1.append(round(f1_score,4))
         mean_precision.append(round(precision,4))
+        mean_recall.append(round(recall,4))
+        mean_entropy.append(round(entropy,4))
 
-        plot_tsne(args.dataset,args.model,epoch,z.to('cpu'),model.mu_c,tru,pre)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
 
 
-    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
     save_results(args.dataset,args.model,args.epochs,metrics_list)
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -242,6 +251,8 @@ def training(args):
     print('Accuracy:{}\t mean:{}\t std:{}\n'.format(mean_accuracy,round(np.mean(mean_accuracy),4),round(np.std(mean_accuracy),4)))
     print('F1-score:{}\t mean:{}\t std:{}\n'.format(mean_f1,round(np.mean(mean_f1),4),round(np.std(mean_f1),4)))
     print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
+    print('recall_score:{}\t mean:{}\t std:{}\n'.format(mean_recall,round(np.mean(mean_recall),4),round(np.std(mean_recall),4)))
+    print('entropy:{}\t mean:{}\t std:{}\n'.format(mean_entropy,round(np.mean(mean_entropy),4),round(np.std(mean_entropy),4)))
     print("True label distribution:{}".format(tru))
     print(Counter(tru))
     print("Predicted label distribution:{}".format(pre))
