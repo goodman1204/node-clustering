@@ -164,7 +164,7 @@ def training(args):
                     plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params_kmeans(kmeans)
 
-                loss =loss_list[0]-0.1*loss_list[1]+0.1*loss_list[2]
+                loss =loss_list[0]-0.1*loss_list[1]-0.1*loss_list[2]
 
 
             optimizer.zero_grad()
@@ -221,7 +221,7 @@ def training(args):
 
         H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
         entropy = entropy_metric(tru,pre)
-        acc = cluster_acc(pre,tru)[0]*100
+        acc = cluster_acc(pre,tru)[0]
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
         mean_v.append(round(V,4))

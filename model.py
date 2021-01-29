@@ -499,18 +499,19 @@ class DAEGCE(nn.Module):
         self.Q = self.getSoftAssignments(z,self.mu_c.cuda(),n_nodes)
 
         self.P = self.calculateP(self.Q)
-        if self.P == None:
-            self.P = self.calculateP(self.Q)
 
-        if epoch%5==0:
-            print("udpate P")
-            self.P = self.calculateP(self.Q)
+        if epoch>=200:
+            if self.P == None:
+                self.P = self.calculateP(self.Q)
+            if epoch%5 == 0:
+                print("udpate P")
+                self.P = self.calculateP(self.Q)
 
         # soft_cluster_loss = self.getKLDivLossExpression(Q,P)/(n_nodes*self.args.hidden2)
-        soft_cluster_loss = self.getKLDivLossExpression(self.Q, self.P)
-
-
-        return [L_rec,soft_cluster_loss],[z]
+            soft_cluster_loss = self.getKLDivLossExpression(self.Q, self.P)
+            return [L_rec,soft_cluster_loss],[z]
+        else:
+            return [L_rec],[z]
 
 
     def predict_soft_assignment(self,z):

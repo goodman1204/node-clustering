@@ -259,7 +259,7 @@ def training(args):
         H, C, V, ari, ami, nmi, purity,f1_score, precision, recall= clustering_evaluation(tru,pre)
         entropy = entropy_metric(tru,pre)
 
-        acc = cluster_acc(pre,tru)[0]*100
+        acc = cluster_acc(pre,tru)[0]
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
         mean_v.append(round(V,4))

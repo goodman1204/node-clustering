@@ -214,7 +214,10 @@ def training(args):
 
 
         print("label mapping using Hungarian algorithm ")
-        pre = label_mapping(tru,pre)
+        try:
+            pre = label_mapping(tru,pre)
+        except:
+            continue
 
         H, C, V, ari, ami, nmi, purity,f1_score,precision,recall= clustering_evaluation(tru,pre)
 
@@ -257,11 +260,11 @@ def training(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
-    parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--model', type=str, default='gcn_vaecd', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
-    parser.add_argument('--hidden1', type=int, default=32, help='Number of units in hidden layer 1.')
-    parser.add_argument('--hidden2', type=int, default=16, help='Number of units in hidden layer 2.')
+    parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
+    parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')

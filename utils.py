@@ -329,16 +329,18 @@ def plot_tsne_non_centers(dataset,model_name,epoch,z,true_label,pred_label):
     cluster_labels=set(true_label)
     print(cluster_labels)
     index_group= [np.array(true_label)==y for y in cluster_labels]
-    colors = cm.tab20(range(len(index_group)))
+    colors = cm.Set1(range(len(index_group)))
 
     fig, ax = plt.subplots()
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
-    ax.legend(cluster_labels)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+    # ax.legend(cluster_labels)
 
     # ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
-    plt.title('true label')
+    # plt.title('true label')
     # ax.legend()
+    ax.axis('off')
+    plt.tight_layout()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'true_label'))
 
     cluster_labels=set(pred_label)
@@ -348,14 +350,16 @@ def plot_tsne_non_centers(dataset,model_name,epoch,z,true_label,pred_label):
 
     fig, ax = plt.subplots()
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
 
     # for index,c in enumerate(colors):
         # ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
 
-    ax.legend(cluster_labels)
-    plt.title('pred label')
+    ax.axis('off')
+    # ax.legend(cluster_labels)
+    # plt.title('pred label')
     # ax.legend()
+    plt.tight_layout()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'pred_label'))
 
 def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
@@ -367,16 +371,18 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
     cluster_labels=set(true_label)
     print(cluster_labels)
     index_group= [np.array(true_label)==y for y in cluster_labels]
-    colors = cm.tab20(range(len(index_group)))
+    colors = cm.Set1(range(len(index_group)))
 
     fig, ax = plt.subplots()
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
-    ax.legend(cluster_labels)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+    ax.axis('off')
+    # ax.legend(cluster_labels)
 
-    ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
-    plt.title('true label')
+    # ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
+    # plt.title('true label')
     # ax.legend()
+    plt.tight_layout()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'true_label'))
 
     cluster_labels=set(pred_label)
@@ -386,14 +392,16 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
 
     fig, ax = plt.subplots()
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=2)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
 
-    for index,c in enumerate(colors):
-        ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
+    # for index,c in enumerate(colors):
+        # ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
 
-    ax.legend(cluster_labels)
-    plt.title('pred label')
+    # ax.legend(cluster_labels)
+    ax.axis('off')
+    # plt.title('pred label')
     # ax.legend()
+    plt.tight_layout()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'pred_label'))
 
 def save_results(dataset,model,epoch,metrics_list):
@@ -408,10 +416,17 @@ def save_results(dataset,model,epoch,metrics_list):
         wp.write("{}\t".format(metrics_name[index]))
         for value in metric:
             wp.write("{}\t".format(value))
-        wp.write("{}\t".format(np.mean(metric)))
-        wp.write("{}\n".format(np.std(metric)))
+        wp.write("{}\t".format(round(np.mean(metric),4)))
+        wp.write("{}\n".format(round(np.std(metric),4)))
 
+    wp.write("mean list for latex table\n")
+    for metric in ['accuracy','Nmi','purity','Ari','f1','precision','recall','entropy']:
+        for index, temp_metric in enumerate(metrics_name):
+            if metric == temp_metric:
+                wp.write("{} &".format(round(np.mean(metrics_list[index]),4)))
+    wp.write("\n")
     wp.close()
+
 
 def entropy_metric(tru,pre):
 

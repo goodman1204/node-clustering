@@ -10,7 +10,7 @@ from torch import optim
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import StepLR
 from model import GCNModelVAE,GCNModelVAECD,GCNModelAE,GCNModelVAECE
-from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne,save_results,entropy_metric
+from utils import preprocess_graph, get_roc_score, sparse_to_tuple,sparse_mx_to_torch_sparse_tensor,cluster_acc,clustering_evaluation, find_motif,drop_feature, drop_edge,choose_cluster_votes,plot_tsne_non_centers,save_results,entropy_metric
 from preprocessing import mask_test_feas,mask_test_edges, load_AN, check_symmetric,load_data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
@@ -122,11 +122,11 @@ def training(args):
 
         pre = model.fit_predict(features_training)
         print("label mapping using Hungarian algorithm ")
-        pre = label_mapping(tru,pre)
+        pre = label_mapping(Y,pre)
 
         H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
-        entropy = entropy_metric(tru,pre)
-        acc = cluster_acc(pre,Y)[0]*100
+        entropy = entropy_metric(Y,pre)
+        acc = cluster_acc(pre,Y)[0]
         mean_h.append(round(H,4))
         mean_c.append(round(C,4))
         mean_v.append(round(V,4))
