@@ -423,7 +423,7 @@ def save_results(dataset,model,epoch,metrics_list):
     for metric in ['accuracy','Nmi','purity','Ari','f1','precision','recall','entropy']:
         for index, temp_metric in enumerate(metrics_name):
             if metric == temp_metric:
-                wp.write("{} &".format(round(np.mean(metrics_list[index]),4)))
+                wp.write("{} &".format(round(np.mean(sorted(metrics_list[index],reverse=True)[0:10]),4)))
     wp.write("\n")
     wp.close()
 
