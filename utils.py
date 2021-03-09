@@ -331,9 +331,9 @@ def plot_tsne_non_centers(dataset,model_name,epoch,z,true_label,pred_label):
     index_group= [np.array(true_label)==y for y in cluster_labels]
     colors = cm.Set1(range(len(index_group)))
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[5,5])
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=30)
     # ax.legend(cluster_labels)
 
     # ax.scatter(zs_tsne[z.shape[0]:, 0], zs_tsne[z.shape[0]:, 1],marker='^',color='b',s=40)
@@ -348,9 +348,9 @@ def plot_tsne_non_centers(dataset,model_name,epoch,z,true_label,pred_label):
     index_group= [np.array(pred_label)==y for y in cluster_labels]
     colors = cm.tab10(range(len(index_group)))
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[5,5])
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=30)
 
     # for index,c in enumerate(colors):
         # ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
@@ -373,9 +373,9 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
     index_group= [np.array(true_label)==y for y in cluster_labels]
     colors = cm.Set1(range(len(index_group)))
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[5,5])
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=30)
     ax.axis('off')
     # ax.legend(cluster_labels)
 
@@ -390,9 +390,9 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
     index_group= [np.array(pred_label)==y for y in cluster_labels]
     colors = cm.tab10(range(len(index_group)))
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=[5,5])
     for index,c in zip(index_group,colors):
-        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=4)
+        ax.scatter(zs_tsne[np.ix_(index), 0], zs_tsne[np.ix_(index), 1],color=c,s=30)
 
     # for index,c in enumerate(colors):
         # ax.scatter(zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 0], zs_tsne[z.shape[0]+index:z.shape[0]+index+1, 1],marker='^',color=c,s=40)
