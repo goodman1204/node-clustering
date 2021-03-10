@@ -130,7 +130,7 @@ def training(args):
 
         # random.seed(args.seed)
         # np.random.seed(args.seed)
-        # torch.manual_seed(args.seed)
+        torch.manual_seed(args.seed)
 
         model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
@@ -167,7 +167,7 @@ def training(args):
             H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
             print("purity, NMI f1_score:",purity,nmi,f1_score)
 
-            if epoch <=200:
+            if epoch <=0.9*args.epochs:
                 loss =sum(loss_list[0:-1])
                 # model.change_nn_grad_true()
                 model.change_cluster_grad_false()
@@ -242,6 +242,7 @@ def training(args):
 
         pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
         print("label mapping using Hungarian algorithm ")
+
         pre = label_mapping(tru,pre)
 
         with open("save_prediction.log",'w') as wp:
@@ -293,7 +294,7 @@ def training(args):
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
-    save_results(args.dataset,args.model,args.epochs,metrics_list)
+    save_results(args,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -335,7 +336,7 @@ if __name__ == '__main__':
     if args.cuda:
         torch.cuda.set_device(0)
         # torch.cuda.manual_seed(args.seed)
-    # random.seed(args.seed)
-    # np.random.seed(args.seed)
-    # torch.manual_seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
     training(args)

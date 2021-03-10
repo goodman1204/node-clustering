@@ -20,6 +20,8 @@ def make_cost_matrix(c1, c2):
     uc2 = np.unique(c2)
     l1 = uc1.size
     l2 = uc2.size
+    # print('uc1,uc2:',uc1,uc2)
+    # print('l1,l2:',l1,l2)
     assert(l1 == l2 and np.all(uc1 == uc2))
 
     m = np.ones([l1, l2])

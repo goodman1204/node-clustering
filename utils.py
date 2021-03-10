@@ -404,13 +404,15 @@ def plot_tsne(dataset,model_name,epoch,z,mu_c,true_label,pred_label):
     plt.tight_layout()
     plt.savefig("./visualization/{}_{}_{}_tsne_{}.pdf".format(model_name,dataset,epoch,'pred_label'))
 
-def save_results(dataset,model,epoch,metrics_list):
+def save_results(args,metrics_list):
     '''
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
     '''
+
     metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision','recall','entropy']
-    wp = open('./logs/{}_{}_{}'.format(model,dataset,epoch),'a')
+    wp = open('./logs/{}_{}_{}'.format(args.model,args.dataset,args.epochs),'a')
     wp.write("\n\n")
+    wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed))
 
     for index,metric in enumerate(metrics_list):
         wp.write("{}\t".format(metrics_name[index]))
@@ -420,7 +422,8 @@ def save_results(dataset,model,epoch,metrics_list):
         wp.write("{}\n".format(round(np.std(metric),4)))
 
     wp.write("mean list for latex table\n")
-    for metric in ['accuracy','Nmi','purity','Ari','f1','precision','recall','entropy']:
+    wp.write("'Nmi','purity','Ari','f1','precision','recall','entropy'\n")
+    for metric in ['Nmi','purity','Ari','f1','precision','recall','entropy']:
         for index, temp_metric in enumerate(metrics_name):
             if metric == temp_metric:
                 wp.write("{} &".format(round(np.mean(sorted(metrics_list[index],reverse=True)[0:10]),4)))

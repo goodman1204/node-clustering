@@ -1,6 +1,6 @@
 *.pdf
 .idea/
-logs/
+data_old/
 pretrain_model.pk 
 # Byte-compiled / optimized / DLL files
 __pycache__/
