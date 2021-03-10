@@ -130,7 +130,7 @@ def training(args):
 
         # random.seed(args.seed)
         # np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
+        # torch.manual_seed(args.seed)
 
         model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
@@ -275,7 +275,7 @@ def training(args):
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
         # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
-        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu().float(),model.mu_c.cpu().float(),Y,pre)
     else:
         pre=clustering_latent_space(mu_u.detach().numpy(),tru)
         plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
@@ -335,7 +335,7 @@ if __name__ == '__main__':
     if args.cuda:
         torch.cuda.set_device(0)
         # torch.cuda.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
     training(args)
