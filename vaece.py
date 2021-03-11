@@ -179,7 +179,7 @@ def training(args):
                     pre = gmm.fit_predict(z.cpu().detach().numpy())
                     H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
                     print("GMM purity, NMI:",purity,nmi)
-                    plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params(gmm)
 
                 loss =sum(loss_list)
@@ -276,10 +276,11 @@ def training(args):
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
         # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
-        plot_tsne(args.dataset,args.model,epoch,z.cpu().float(),model.mu_c.cpu().float(),Y,pre)
+        # plot_tsne(args.dataset,args.model,epoch,z.cpu().float(),model.mu_c.cpu().float(),Y,pre)
+        pass
     else:
         pre=clustering_latent_space(mu_u.detach().numpy(),tru)
-        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+        # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
         # np.save(embedding_attr_mean_result_file, mu_a.data.numpy())
@@ -334,7 +335,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(0)
+        torch.cuda.set_device(1)
         # torch.cuda.manual_seed(args.seed)
     random.seed(args.seed)
     np.random.seed(args.seed)

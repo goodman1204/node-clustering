@@ -202,10 +202,10 @@ def training(args):
         # recovered_u, z = model(features_training, adj_norm)
         if args.model == 'gcn_vaecd':
             pre,gamma = model.predict(z)
-            plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+            # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
         else:
             pre,mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
-            plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
+            # plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
 
 
         with open("./logs/{}_{}_save_prediction.log".format(args.model,args.dataset),'w') as wp:
@@ -215,7 +215,7 @@ def training(args):
 
         print("label mapping using Hungarian algorithm ")
         try:
-            pre = label_mapping(tru,pre)
+            pre = label_mapping(tru,pre)# vaece label mapping show bugs, not all categories are predicted
         except:
             continue
 
@@ -238,7 +238,7 @@ def training(args):
         mean_entropy.append(round(entropy,4))
 
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
-    save_results(args.dataset,args.model,args.epochs,metrics_list)
+    save_results(args,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
@@ -269,7 +269,7 @@ def parse_args():
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
-    parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
+    parser.add_argument('--num_run',type=int,default=10,help='Number of running times')
     parser.add_argument('--cuda', action='store_true', default=False, help='Disables CUDA training.')
     args, unknown = parser.parse_known_args()
 
@@ -278,7 +278,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(0)
+        torch.cuda.set_device(1)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)

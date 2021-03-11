@@ -410,7 +410,7 @@ def save_results(args,metrics_list):
     '''
 
     metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision','recall','entropy']
-    wp = open('./logs/{}_{}_{}'.format(args.model,args.dataset,args.epochs),'a')
+    wp = open('./result_logs/{}_{}_{}'.format(args.model,args.dataset,args.epochs),'a')
     wp.write("\n\n")
     wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed))
 
@@ -447,8 +447,8 @@ def entropy_metric(tru,pre):
         pre_d.append( pre_s[i]/size)
 
     print("label distribution for entropy")
-    print(tru_d)
-    print(pre_d)
+    print('true labels:',tru_d)
+    print('pred labels:',pre_d)
 
     return entropy(tru_d,pre_d)
 

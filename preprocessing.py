@@ -15,9 +15,9 @@ def load_AN(dataset):
     attri_file.close()
     label_file.close()
 
-    node_num = int(edges[0].split('\t')[1].strip())
-    edge_num = int(edges[1].split('\t')[1].strip())
-    attribute_number = int(attributes[1].split('\t')[1].strip())
+    node_num = int(edges[0].split()[1].strip())
+    edge_num = int(edges[1].split()[1].strip())
+    attribute_number = int(attributes[1].split()[1].strip())
     print("dataset:{}, node_num:{},edge_num:{},attribute_num:{}".format(dataset, node_num, edge_num, attribute_number))
     edges.pop(0)
     edges.pop(0)
@@ -28,8 +28,8 @@ def load_AN(dataset):
 
     edge_num_no_selfloop= 0
     for line in edges:
-        node1 = int(line.split('\t')[0].strip())
-        node2 = int(line.split('\t')[1].strip())
+        node1 = int(line.split()[0].strip())
+        node2 = int(line.split()[1].strip())
         if node1==node2:
             continue
         adj_row.append(node1)
@@ -40,8 +40,8 @@ def load_AN(dataset):
     att_row = []
     att_col = []
     for line in attributes:
-        node1 = int(line.split('\t')[0].strip())
-        attribute1 = int(line.split('\t')[1].strip())
+        node1 = int(line.split()[0].strip())
+        attribute1 = int(line.split()[1].strip())
         att_row.append(node1)
         att_col.append(attribute1)
     attribute = sp.csc_matrix((np.ones(len(att_row)), (att_row, att_col)), shape=(node_num, attribute_number))

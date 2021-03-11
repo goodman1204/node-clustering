@@ -161,7 +161,7 @@ def training(args):
                     pre = kmeans.fit_predict(z.cpu().detach().numpy())
                     H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
                     print("kmeans purity, NMI:",purity,nmi)
-                    plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params_kmeans(kmeans)
 
                 loss =loss_list[0]-0.1*loss_list[1]-0.1*loss_list[2]
@@ -235,11 +235,11 @@ def training(args):
         mean_recall.append(round(recall,4))
         mean_entropy.append(round(entropy,4))
 
-        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
+        # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
 
 
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
-    save_results(args.dataset,args.model,args.epochs,metrics_list)
+    save_results(args,metrics_list)
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
     print('Completeness:{}\t mean:{}\t std:{}\n'.format(mean_c,round(np.mean(mean_c),4),round(np.std(mean_c),4)))
@@ -265,7 +265,7 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
-    parser.add_argument('--lr', type=float, default=0.001, help='Initial aearning rate.')
+    parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
@@ -278,7 +278,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(0)
+        torch.cuda.set_device(1)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)

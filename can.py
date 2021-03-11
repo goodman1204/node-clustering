@@ -241,7 +241,7 @@ def training(args):
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
-    save_results(args.dataset,args.model,args.epochs,metrics_list)
+    save_results(args,metrics_list)
 
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))

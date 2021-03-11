@@ -331,9 +331,9 @@ class NEC(nn.Module):
         H_norm = n.sqrt()*H.sqrt()/(H.sqrt().sum())
         # print("H_norm shape",H_norm.shape)
         # print("H_norm ",H_norm)
-        m = (adj-torch.eye(adj.shape[0]).cuda()).sum()/2
-        D = (adj-torch.eye(adj.shape[0]).cuda()).sum(1) # the degree of nodes, adj includes self loop
-        B = (adj-torch.eye(adj.shape[0]).cuda())-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
+        m = (-torch.eye(adj.shape[0]).cuda()+adj).sum()/2
+        D = (-torch.eye(adj.shape[0]).cuda()+adj).sum(1) # the degree of nodes, adj includes self loop
+        B = (-torch.eye(adj.shape[0]).cuda()+adj)-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
         mod_loss=torch.trace(torch.matmul(torch.matmul(H_norm.t(),B),H_norm)/(4*m))
         # print("mod_loss",mod_loss)
         return mod_loss
