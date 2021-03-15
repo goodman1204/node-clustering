@@ -112,7 +112,7 @@ def training(args):
 
 
     # adj_norm = drop_edge(adj_norm,Y)
-    if args.cuda:
+    if args.cuda>=0:
         # drop features
         features_training = features_training.to_dense().cuda()
         # features_training = drop_feature(features_training,1.0).cuda()
@@ -136,7 +136,7 @@ def training(args):
 
         # using GMM to pretrain the  clustering parameters
 
-        if args.cuda:
+        if args.cuda>=0:
             model.cuda()
 
 
@@ -167,7 +167,7 @@ def training(args):
             H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
             print("purity, NMI f1_score:",purity,nmi,f1_score)
 
-            if epoch <=0.9*args.epochs:
+            if epoch <200:
                 loss =sum(loss_list[0:-1])
                 # model.change_nn_grad_true()
                 model.change_cluster_grad_false()
@@ -184,7 +184,7 @@ def training(args):
 
                 loss =sum(loss_list)
 
-                if epoch%10 <=8:
+                if epoch%10 < 8:
                     model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                 else:
@@ -317,7 +317,7 @@ def training(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
-    parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--model', type=str, default='gcn_vaece', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
@@ -327,15 +327,15 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
-    parser.add_argument('--cuda', action='store_true', default=False, help='Disables CUDA training.')
+    parser.add_argument('--cuda', type=int, default=-1, help='Disables CUDA training.')
     args, unknown = parser.parse_known_args()
 
     return args
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.cuda:
-        torch.cuda.set_device(1)
+    if args.cuda>=0:
+        torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
     random.seed(args.seed)
     np.random.seed(args.seed)

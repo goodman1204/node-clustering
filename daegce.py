@@ -104,7 +104,7 @@ def training(args):
     mean_entropy = []
 
 
-    if args.cuda:
+    if args.cuda>=0:
         features_training = features_training.to_dense().cuda() # it needs higher memory if to_dense
         adj_norm = adj_norm.to_dense().cuda()
         pos_weight_u = pos_weight_u.cuda()
@@ -124,7 +124,7 @@ def training(args):
 
         model = DAEGCE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
 
-        if args.cuda:
+        if args.cuda>=0:
             model.cuda()
 
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
@@ -161,10 +161,10 @@ def training(args):
                     pre = kmeans.fit_predict(z.cpu().detach().numpy())
                     H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
                     print("kmeans purity, NMI:",purity,nmi)
-                    # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params_kmeans(kmeans)
 
-                loss =loss_list[0]-10*loss_list[1]
+                loss =loss_list[0]+10*loss_list[1]
 
 
             optimizer.zero_grad()
@@ -211,9 +211,9 @@ def training(args):
         print("label mapping using Hungarian algorithm ")
         pre = label_mapping(tru,pre)
 
-        with open("./logs/{}_{}_prediction.log".format(args.model,args.dataset),'w') as wp:
-            for label in pre:
-                wp.write("{}\n".format(label))
+        # with open("./DAEGCE/{}_{}_prediction.log".format(args.model,args.dataset),'w') as wp:
+            # for label in pre:
+                # wp.write("{}\n".format(label))
 
         print('gamma_c:',gamma_c)
         print('gamma_c argmax:',np.argmax(gamma_c,1))
@@ -235,11 +235,11 @@ def training(args):
         mean_recall.append(round(recall,4))
         mean_entropy.append(round(entropy,4))
 
-        # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
 
 
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
-    save_results(args,metrics_list)
+    save_results(args, metrics_list)
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))
     print('Completeness:{}\t mean:{}\t std:{}\n'.format(mean_c,round(np.mean(mean_c),4),round(np.std(mean_c),4)))
@@ -270,15 +270,15 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
-    parser.add_argument('--cuda', action='store_true', default=False, help='Disables CUDA training.')
+    parser.add_argument('--cuda', type=int, default=-1, help='Disables CUDA training.')
     args, unknown = parser.parse_known_args()
 
     return args
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.cuda:
-        torch.cuda.set_device(1)
+    if args.cuda>=0:
+        torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)
