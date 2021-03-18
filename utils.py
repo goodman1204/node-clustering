@@ -409,10 +409,10 @@ def save_results(args,metrics_list):
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision]
     '''
 
-    metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision','recall','entropy']
+    metrics_name=['H','C','V','Ari','Ami','Nmi','purity','accuracy','f1','precision','recall','entropy','time']
     wp = open('./result_logs/{}_{}_{}'.format(args.model,args.dataset,args.epochs),'a')
     wp.write("\n\n")
-    wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed))
+    wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{},beta:{}, omega:{} \n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed,args.beta,args.omega))
 
     for index,metric in enumerate(metrics_list):
         wp.write("{}\t".format(metrics_name[index]))

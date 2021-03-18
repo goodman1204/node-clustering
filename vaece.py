@@ -109,6 +109,7 @@ def training(args):
     mean_precision=[]
     mean_recall = []
     mean_entropy = []
+    mean_time= []
 
 
     # adj_norm = drop_edge(adj_norm,Y)
@@ -153,6 +154,7 @@ def training(args):
 
         loss_list=None
         pretrain_flag = False
+        start_time = time.time()
         for epoch in range(args.epochs):
             t = time.time()
             model.train()
@@ -182,9 +184,9 @@ def training(args):
                     # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
                     model.init_clustering_params(gmm)
 
-                loss =sum(loss_list)
+                loss =sum(loss_list[0:5])+ args.beta*loss_list[5]+ args.omega*loss_list[6]
 
-                if epoch%10 < 8:
+                if epoch%10 < 5:
                     model.change_nn_grad_true()
                     model.change_cluster_grad_false()
                 else:
@@ -226,7 +228,8 @@ def training(args):
                 "LR={:.4f}".format(lr_s.get_last_lr()[0]),
                   "train_loss_total=", "{:.5f}".format(loss.item()),
                   "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
-                  # "log_lik=", "{:.5f}".format(cost.item()),
+                  "mutual dist loss=", "{:.5f}".format(args.beta*loss_list[5]),
+                  "soft clustering loss=", "{:.5f}".format(args.omega*loss_list[6]),
                   # "KL_u=", "{:.5f}".format(KLD_u.item()),
                   # "KL_a=", "{:.5f}".format(KLD_a.item()),
                   # "yita_loss=", "{:.5f}".format(yita_loss.item()),
@@ -235,15 +238,18 @@ def training(args):
                   # "val_edge_ap=", "{:.5f}".format(ap_curr),
                   # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - t))
+                  "time=", "{:.5f}".format(time.time() - t),
+                  "total time=", "{:.5f}".format(time.time() - start_time))
 
         print("Optimization Finished!")
+        end_time = time.time()
+        print("total time spend:", end_time- start_time)
 
 
         pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
         print("label mapping using Hungarian algorithm ")
 
-        pre = label_mapping(tru,pre)
+        # pre = label_mapping(tru,pre)
 
         with open("save_prediction.log",'w') as wp:
             for label in pre:
@@ -273,6 +279,7 @@ def training(args):
         mean_precision.append(round(precision,4))
         mean_recall.append(round(recall,4))
         mean_entropy.append(round(entropy,4))
+        mean_time.append(round(end_time-start_time,4))
 
     if args.model in ['gcn_vaecd','gcn_vaece']:
         # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u)
@@ -294,7 +301,7 @@ def training(args):
         # print('Test edge AP score: ' + str(ap_score))
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
-    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy,mean_time]
     save_results(args,metrics_list)
 
     ###### Report Final Results ######
@@ -324,6 +331,8 @@ def parse_args():
     parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
+    parser.add_argument('--omega', type=float, default=1, help='weight for the soft clustering loss')
+    parser.add_argument('--beta', type=float, default=1, help='weight for the mutual distance loss')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')

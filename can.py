@@ -107,6 +107,7 @@ def training(args):
     mean_precision=[]
     mean_recall = []
     mean_entropy = []
+    mean_time= []
 
 
     # adj_norm = drop_edge(adj_norm,Y)
@@ -152,6 +153,7 @@ def training(args):
         loss_list=None
         pretrain_flag = False
 
+        start_time = time.time()
         for epoch in range(args.epochs):
             t = time.time()
 
@@ -199,6 +201,8 @@ def training(args):
                   "time=", "{:.5f}".format(time.time() - t))
 
         print("Optimization Finished!")
+        end_time = time.time()
+        print("total time spend:", end_time- start_time)
 
         pre, mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
         plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
@@ -226,6 +230,7 @@ def training(args):
         mean_precision.append(round(precision,4))
         mean_recall.append(round(recall,4))
         mean_entropy.append(round(entropy,4))
+        mean_time.append(round(end_time-start_time,4))
 
 
         # np.save(embedding_node_mean_result_file, mu_u.data.numpy())
@@ -240,7 +245,8 @@ def training(args):
         # print('Test edge AP score: ' + str(ap_score))
         # print('Test attr ROC score: ' + str(roc_score_a))
         # print('Test attr AP score: ' + str(ap_score_a))
-    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
+    # metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy,mean_time]
     save_results(args,metrics_list)
 
     ###### Report Final Results ######
@@ -281,7 +287,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(4)
+        torch.cuda.set_device(1)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)

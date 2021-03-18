@@ -102,6 +102,7 @@ def training(args):
     mean_precision=[]
     mean_recall = []
     mean_entropy = []
+    mean_time= []
 
 
     if args.cuda>=0:
@@ -140,6 +141,7 @@ def training(args):
 
         loss_list=None
         pretrain_flag = False
+        start_time = time.time()
         for epoch in range(args.epochs):
             t = time.time()
             model.train()
@@ -202,9 +204,12 @@ def training(args):
                   # "val_edge_ap=", "{:.5f}".format(ap_curr),
                   # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - t))
+                  "time=", "{:.5f}".format(time.time() - t),
+                  "total time=", "{:.5f}".format(time.time() - start_time))
 
         print("Optimization Finished!")
+        end_time = time.time()
+        print("total time spend:", end_time- start_time)
 
         pre,gamma_c = model.predict_soft_assignment(z)
 
@@ -234,11 +239,13 @@ def training(args):
         mean_precision.append(round(precision,4))
         mean_recall.append(round(recall,4))
         mean_entropy.append(round(entropy,4))
+        mean_time.append(round(end_time-start_time,4))
 
         plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
 
 
-    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
+    # metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]
+    metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy,mean_time]
     save_results(args, metrics_list)
     ###### Report Final Results ######
     print('Homogeneity:{}\t mean:{}\t std:{}\n'.format(mean_h,round(np.mean(mean_h),4),round(np.std(mean_h),4)))

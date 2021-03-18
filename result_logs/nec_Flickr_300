@@ -34,3 +34,22 @@ entropy	0.0114	0.0154	0.0176	0.012	0.0178	0.0167	0.0137	0.0175	0.0218	0.0168	0.0
 mean list for latex table
 'Nmi','purity','Ari','f1','precision','recall','entropy'
 0.1299 &0.2657 &0.0744 &0.2347 &0.2366 &0.2362 &0.0161 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20
+H	0.1327	0.1327	0.0
+C	0.1335	0.1335	0.0
+V	0.1331	0.1331	0.0
+Ari	0.0751	0.0751	0.0
+Ami	0.131	0.131	0.0
+Nmi	0.1331	0.1331	0.0
+purity	0.2693	0.2693	0.0
+accuracy	0.2352	0.2352	0.0
+f1	0.2357	0.2357	0.0
+precision	0.2394	0.2394	0.0
+recall	0.2352	0.2352	0.0
+entropy	0.0154	0.0154	0.0
+time	374.2507	374.2507	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.1331 &0.2693 &0.0751 &0.2357 &0.2394 &0.2352 &0.0154 &

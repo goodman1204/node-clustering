@@ -535,7 +535,7 @@ class DAEGCE(nn.Module):
 		log_arg = P_expression / Q_expression
 		log_exp = torch.log(log_arg)
 		sum_arg = P_expression * log_exp
-		loss = torch.sum(sum_arg)
+		loss = torch.mean(sum_arg)
 		return loss
 
 	def getSoftAssignments(self,latent_space, cluster_centers, num_samples):
