@@ -249,7 +249,7 @@ def training(args):
         pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
         print("label mapping using Hungarian algorithm ")
 
-        # pre = label_mapping(tru,pre)
+        pre = label_mapping(tru,pre)
 
         with open("save_prediction.log",'w') as wp:
             for label in pre:
