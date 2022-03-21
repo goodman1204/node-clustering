@@ -285,7 +285,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     if args.cuda:
-        torch.cuda.set_device(1)
+        torch.cuda.set_device(0)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)

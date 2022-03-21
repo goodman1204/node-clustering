@@ -53,3 +53,5 @@ time	72.6438	72.6438	0.0
 mean list for latex table
 'Nmi','purity','Ari','f1','precision','recall','entropy'
 0.3289 &0.6066 &0.3124 &0.5588 &0.5936 &0.5518 &0.056 &
+
+

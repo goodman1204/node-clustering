@@ -335,7 +335,7 @@ def parse_args():
     parser.add_argument('--beta', type=float, default=1, help='weight for the mutual distance loss')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
     parser.add_argument('--nClusters',type=int,default=7)
-    parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
+    parser.add_argument('--num_run',type=int,default=5,help='Number of running times')
     parser.add_argument('--cuda', type=int, default=-1, help='Disables CUDA training.')
     args, unknown = parser.parse_known_args()
 
