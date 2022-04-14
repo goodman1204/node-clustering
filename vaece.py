@@ -169,7 +169,7 @@ def training(args):
             H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
             print("purity, NMI f1_score:",purity,nmi,f1_score)
 
-            if epoch <200:
+            if epoch < 200:
                 loss =sum(loss_list[0:-1])
                 # model.change_nn_grad_true()
                 model.change_cluster_grad_false()
@@ -346,7 +346,7 @@ if __name__ == '__main__':
     if args.cuda>=0:
         torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
     training(args)

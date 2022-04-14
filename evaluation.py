@@ -14,7 +14,7 @@ def clustering_latent_space(emb, label, nb_clusters=None):
     if nb_clusters is None:
         nb_clusters = len(np.unique(label))
     # K-Means Clustering
-    km = KMeans(n_clusters = nb_clusters,init='random')
+    km = KMeans(n_clusters = nb_clusters,max_iter=500)
     clustering_pred = km.fit_predict(emb)
     # Compute metrics
     return clustering_pred, km.cluster_centers_

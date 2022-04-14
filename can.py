@@ -204,7 +204,7 @@ def training(args):
         end_time = time.time()
         print("total time spend:", end_time- start_time)
 
-        pre, mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
+        pre, mu_c = clustering_latent_space(z.cpu().detach().numpy(),tru)
         plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
 
         print("label mapping using Hungarian algorithm ")
