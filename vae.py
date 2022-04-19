@@ -152,24 +152,8 @@ def training(args):
         for epoch in range(args.epochs):
 
             t = time.time()
+            epoch_start = time.time()
             model.train()
-
-            # if args.model =='gcn_vaecd':
-                # recovered_u, z = model(features_training, adj_norm)
-
-                # loss_list = model.loss(features_training,adj_norm,labels = adj_label, n_nodes = n_nodes, n_features = n_features,norm = norm_u, pos_weight = pos_weight_u)
-                # loss =sum(loss_list)
-
-                # if epoch>200:
-                    # if pretrain_flag == False:
-                        # pretrain_flag = True
-                        # print('pre_train',pretrain_flag)
-                        # gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
-                        # pre = gmm.fit_predict(z.cpu().detach().numpy())
-                        # H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
-                        # print("GMM purity, NMI:",purity,nmi)
-                        # # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
-                        # model.init_clustering_params(gmm)
 
             if args.model == 'gcn_ae':
                 recovered_u, z = model(features_training, adj_norm)
@@ -207,22 +191,18 @@ def training(args):
                   # "KL_u=", "{:.5f}".format(KLD_u.item()),
                   # "KL_a=", "{:.5f}".format(KLD_a.item()),
                   # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
+                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()))
                   # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
                   # "val_edge_ap=", "{:.5f}".format(ap_curr),
                   # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - t))
+            print("epoch time=", "{:.5f}".format(time.time() - epoch_start))
 
         print("Optimization Finished!")
         end_time = time.time()
-        print("total time spend:", end_time- start_time)
+        print("total time spend:", end_time - start_time)
         # recovered_u, z = model(features_training, adj_norm)
-        if args.model == 'gcn_vaecd':
-            pre,gamma = model.predict(z)
-            # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
-        else:
-            pre,mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
+        pre,mu_c=clustering_latent_space(z.cpu().detach().numpy(),tru)
             # plot_tsne(args.dataset,args.model,epoch,z.cpu(),torch.tensor(mu_c),Y,pre)
 
 
@@ -293,7 +273,7 @@ def parse_args():
     parser.add_argument('--synthetic_density', type=float, default=0.1)
 
     parser.add_argument('--nClusters',type=int,default=7)
-    parser.add_argument('--num_run',type=int,default=10,help='Number of running times')
+    parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
     parser.add_argument('--cuda', type=int, default=0, help='training with GPU.')
     args, unknown = parser.parse_known_args()
 

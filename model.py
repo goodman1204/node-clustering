@@ -296,7 +296,7 @@ class NEC(nn.Module):
         super(NEC, self).__init__()
 
         self.args = args
-        device = self.device
+        self.device = device
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.dc = InnerProductDecoder(dropout, act=torch.sigmoid)

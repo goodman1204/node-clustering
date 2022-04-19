@@ -26,13 +26,20 @@ import warnings
 warnings.simplefilter("ignore")
 
 def training(args):
+    if args.cuda>=0:
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
 
     print("Using {} dataset".format(args.dataset))
     if args.dataset in ['cora','pubmed','citeseer']:
         adj_init, features, labels, idx_train, idx_val, idx_test = load_data(args.dataset)
         Y = np.argmax(labels,1) # labels is in one-hot format
-    else:
+    elif args.dataset in ['Flickr','BlogCatalog']:
         adj_init, features, Y= load_AN(args.dataset)
+    else:
+        adj_init, features, Y= load_AN("synthetic_{}_{}".format(args.synthetic_num_nodes,args.synthetic_density))
+
 
     # Store original adjacency matrix (without diagonal entries) for later
     adj_init = adj_init - sp.dia_matrix((adj_init.diagonal()[np.newaxis, :], [0]), shape=adj_init.shape)
@@ -105,13 +112,15 @@ def training(args):
     mean_time= []
 
 
-    if args.cuda:
-        features_training = features_training.to_dense().cuda() # it needs higher memory if to_dense
-        adj_norm = adj_norm.to_dense().cuda()
-        pos_weight_u = pos_weight_u.cuda()
-        pos_weight_a = pos_weight_a.cuda()
-        adj_label = adj_label.cuda()
-        features_label = features_label.cuda()
+
+
+    features_training = features_training.to_dense().to(device)
+    # features_training = drop_feature(features_training,1.0).cuda()
+    adj_norm = adj_norm.to_dense().to(device)
+    pos_weight_u = pos_weight_u.to(device)
+    pos_weight_a = pos_weight_a.to(device)
+    adj_label = adj_label.to(device)
+    features_label = features_label.to(device)
 
     features_training, adj_norm = Variable(features_training), Variable(adj_norm)
     pos_weight_u = Variable(pos_weight_u)
@@ -123,10 +132,9 @@ def training(args):
         # np.random.seed(args.seed)
         # torch.manual_seed(args.seed)
 
-        model = NEC(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = NEC(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args,device)
 
-        if args.cuda:
-            model.cuda()
+        model.to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
@@ -151,10 +159,10 @@ def training(args):
 
             pre, gamma = model.predict_soft_assignment(z)
 
-            H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
-            print("purity, NMI, f1_score:",purity,nmi,f1_score)
+            # H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
+            # print("purity, NMI, f1_score:",purity,nmi,f1_score)
 
-            if epoch <=200:
+            if epoch <=args.pre_gmm:
                 loss =loss_list[0]-0.1*loss_list[1] # when epoch < T1=200, only update reconstruction loss and modularity loss, the modularity loss need to be maximized (with minus symbol)
             else:
                 if pretrain_flag == False:
@@ -213,12 +221,12 @@ def training(args):
 
         pre,gamma_c = model.predict_soft_assignment(z)
 
-        print("label mapping using Hungarian algorithm ")
-        pre = label_mapping(tru,pre)
+        # print("label mapping using Hungarian algorithm ")
+        # pre = label_mapping(tru,pre)
 
-        with open("nec_{}_prediction.log".format(args.dataset),'w') as wp:
-            for label in pre:
-                wp.write("{}\n".format(label))
+        # with open("nec_{}_prediction.log".format(args.dataset),'w') as wp:
+            # for label in pre:
+                # wp.write("{}\n".format(label))
 
         print('gamma_c:',gamma_c)
         print('gamma_c argmax:',np.argmax(gamma_c,1))
@@ -270,22 +278,28 @@ def parse_args():
     parser.add_argument('--model', type=str, default='nec', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
+    parser.add_argument('--pre_gmm', type=int, default=200, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.002, help='Initial aearning rate.')
     parser.add_argument('--dropout', type=float, default=0.0, help='Dropout rate (1 - keep probability).')
+
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
+    parser.add_argument('--synthetic_num_nodes',type=int,default=1000)
+    parser.add_argument('--synthetic_density', type=float, default=0.1)
+
+
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
-    parser.add_argument('--cuda', action='store_true', default=False, help='Disables CUDA training.')
+    parser.add_argument('--cuda', type=int, default=0, help='training with GPU.')
     args, unknown = parser.parse_known_args()
 
     return args
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.cuda:
-        torch.cuda.set_device(0)
+    # if args.cuda:
+        # torch.cuda.set_device(0)
         # torch.cuda.manual_seed(args.seed)
     # random.seed(args.seed)
     # np.random.seed(args.seed)

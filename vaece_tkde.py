@@ -173,12 +173,11 @@ def training(args):
 
             loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
 
-            pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+            # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+            # H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
+            # print("purity, NMI f1_score:",purity,nmi,f1_score)
 
-            H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
-            print("purity, NMI f1_score:",purity,nmi,f1_score)
-
-            if epoch <200:
+            if epoch <args.pre_gmm:
                 if args.coembedding:
                     loss =sum(loss_list[0:-1])
                 else:
@@ -187,15 +186,15 @@ def training(args):
                 # model.change_nn_grad_true()
                 model.change_cluster_grad_false()
             else:
-                if pretrain_flag == False:
-                    pretrain_flag = True
-                    print('pre_train',pretrain_flag)
-                    gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
-                    pre = gmm.fit_predict(z.cpu().detach().numpy())
-                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
-                    print("GMM purity, NMI:",purity,nmi)
-                    # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
-                    model.init_clustering_params(gmm)
+                # if pretrain_flag == False:
+                    # pretrain_flag = True
+                    # print('pre_train',pretrain_flag)
+                    # gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
+                    # pre = gmm.fit_predict(z.cpu().detach().numpy())
+                    # H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
+                    # print("GMM purity, NMI:",purity,nmi)
+                    # # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    # model.init_clustering_params(gmm)
 
                 # all loss modules
                 if args.coembedding:
@@ -216,25 +215,18 @@ def training(args):
                 else:
                     loss =loss_list[0]+loss_list[2]+loss_list[4]+loss_list[5]+loss_list[6]
 
-                # if epoch%10 < 5:
-                    # model.change_nn_grad_true()
-                    # model.change_cluster_grad_false()
-                # else:
-                    # model.change_nn_grad_false()
-                    # model.change_cluster_grad_true()
+                if epoch%10 < 5:
+                    model.change_nn_grad_true()
+                    model.change_cluster_grad_false()
+                else:
+                    model.change_nn_grad_false()
+                    model.change_cluster_grad_true()
 
             optimizer2.zero_grad()
             loss.backward()
             optimizer2.step()
 
-            if args.model =='gcn_vaecd':
-                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-            elif args.model == 'gcn_ae':
-                recovered_u, mu_u,logvar_u = model(features_training, adj_norm)
-            elif args.model == 'gcn_vae':
-                recovered_u, mu_u, logvar_u = model(features_training, adj_norm)
-            elif args.model =='gcn_vaece': #gcn with vae for co-embedding of feature and graph
-                (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
+            (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
             lr_s.step()
 
@@ -260,16 +252,15 @@ def training(args):
                   "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
                   "mutual dist loss=", "{:.5f}".format(args.beta*loss_list[5]),
                   "soft clustering loss=", "{:.5f}".format(args.omega*loss_list[6]),
+                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()))
                   # "KL_u=", "{:.5f}".format(KLD_u.item()),
                   # "KL_a=", "{:.5f}".format(KLD_a.item()),
                   # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()),
                   # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
                   # "val_edge_ap=", "{:.5f}".format(ap_curr),
                   # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
-                  # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - epoch_start),
-                  "total time=", "{:.5f}".format(time.time() - start_time))
+                  # "val_attr_ap=", "{:.5f}".format(ap_curr_a),)
+            print("epoch time=", "{:.5f}".format(time.time() - epoch_start))
 
         print("Optimization Finished!")
         end_time = time.time()
@@ -360,6 +351,7 @@ def parse_args():
     parser.add_argument('--model', type=str, default='gcn_vaece', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
+    parser.add_argument('--pre_gmm', type=int, default=200, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
     parser.add_argument('--hidden2', type=int, default=32, help='Number of units in hidden layer 2.')
     parser.add_argument('--lr', type=float, default=0.002, help='Initial learning rate.')
