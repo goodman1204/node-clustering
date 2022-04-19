@@ -26,12 +26,21 @@ warnings.simplefilter("ignore")
 
 def training(args):
 
+    if args.cuda>=0:
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
+
     print("Using {} dataset".format(args.dataset))
     if args.dataset in ['cora','pubmed','citeseer']:
         adj_init, features, labels, idx_train, idx_val, idx_test = load_data(args.dataset)
         Y = np.argmax(labels,1) # labels is in one-hot format
-    else:
+    elif args.dataset in ['Flickr','BlogCatalog']:
         adj_init, features, Y= load_AN(args.dataset)
+    else:
+        adj_init, features, Y= load_AN("synthetic_{}_{}".format(args.synthetic_num_nodes,args.synthetic_density))
+
+
 
     # print("find motif")
     # motif_matrix=find_motif(adj_init,args.dataset)
@@ -113,15 +122,15 @@ def training(args):
 
 
     # adj_norm = drop_edge(adj_norm,Y)
-    if args.cuda>=0:
-        # drop features
-        features_training = features_training.to_dense().cuda()
-        # features_training = drop_feature(features_training,1.0).cuda()
-        adj_norm = adj_norm.to_dense().cuda()
-        pos_weight_u = pos_weight_u.cuda()
-        pos_weight_a = pos_weight_a.cuda()
-        adj_label = adj_label.cuda()
-        features_label = features_label.cuda()
+    # if args.cuda>=0:
+    # drop features
+    features_training = features_training.to_dense().to(device)
+    # features_training = drop_feature(features_training,1.0).cuda()
+    adj_norm = adj_norm.to_dense().to(device)
+    pos_weight_u = pos_weight_u.to(device)
+    pos_weight_a = pos_weight_a.to(device)
+    adj_label = adj_label.to(device)
+    features_label = features_label.to(device)
 
     features_training, adj_norm = Variable(features_training), Variable(adj_norm)
     pos_weight_u = Variable(pos_weight_u)
@@ -133,12 +142,12 @@ def training(args):
         # np.random.seed(args.seed)
         torch.manual_seed(args.seed)
 
-        model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args)
+        model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args,device)
 
         # using GMM to pretrain the  clustering parameters
 
-        if args.cuda>=0:
-            model.cuda()
+        # if args.cuda>=0:
+        model.to(device)
 
 
         optimizer2 = optim.Adam(model.parameters(), lr=args.lr)
@@ -156,7 +165,7 @@ def training(args):
         pretrain_flag = False
         start_time = time.time()
         for epoch in range(args.epochs):
-            t = time.time()
+            epoch_start = time.time()
             model.train()
             # (recovered_u, recovered_a), mu_u, logvar_u, mu_a, logvar_a = model(features_training, adj_norm)
 
@@ -259,12 +268,12 @@ def training(args):
                   # "val_edge_ap=", "{:.5f}".format(ap_curr),
                   # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
                   # "val_attr_ap=", "{:.5f}".format(ap_curr_a),
-                  "time=", "{:.5f}".format(time.time() - t),
+                  "time=", "{:.5f}".format(time.time() - epoch_start),
                   "total time=", "{:.5f}".format(time.time() - start_time))
 
         print("Optimization Finished!")
         end_time = time.time()
-        print("total time spend:", end_time- start_time)
+        print("total time spend:", end_time - start_time)
 
 
         if args.kmeans:
@@ -341,10 +350,10 @@ def training(args):
     print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
     print('recall_score:{}\t mean:{}\t std:{}\n'.format(mean_recall,round(np.mean(mean_recall),4),round(np.std(mean_recall),4)))
     print('entropy:{}\t mean:{}\t std:{}\n'.format(mean_entropy,round(np.mean(mean_entropy),4),round(np.std(mean_entropy),4)))
-    print("True label distribution:{}".format(tru))
-    print(Counter(tru))
-    print("Predicted label distribution:{}".format(pre))
-    print(Counter(pre))
+    # print("True label distribution:{}".format(tru))
+    # print(Counter(tru))
+    # print("Predicted label distribution:{}".format(pre))
+    # print(Counter(pre))
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
@@ -358,12 +367,16 @@ def parse_args():
     parser.add_argument('--omega', type=float, default=1, help='weight for the soft clustering loss')
     parser.add_argument('--beta', type=float, default=1, help='weight for the mutual distance loss')
     parser.add_argument('--dataset', type=str, default='cora', help='type of dataset.')
+
+    parser.add_argument('--synthetic_num_nodes',type=int,default=1000)
+    parser.add_argument('--synthetic_density', type=float, default=0.1)
+
     parser.add_argument('--nClusters',type=int,default=7)
     parser.add_argument('--mutual_loss',type=int,default=1)
     parser.add_argument('--clustering_loss',type=int,default=1)
     parser.add_argument('--coembedding',type=int,default=1)
     parser.add_argument('--kmeans',type=int,default=0)
-    parser.add_argument('--num_run',type=int,default=5,help='Number of running times')
+    parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
     parser.add_argument('--cuda', type=int, default=0, help='training with GPU.')
     args, unknown = parser.parse_known_args()
 
@@ -372,8 +385,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # args.seed = np.random.randint(200,250)
-    if args.cuda>=0:
-        torch.cuda.set_device(args.cuda)
+        # torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
 
     random.seed(args.seed)

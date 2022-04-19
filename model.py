@@ -19,10 +19,11 @@ from estimators import estimate_mutual_information
 from collections import Counter
 
 class GCNModelAE(nn.Module):
-    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args,device=torch.device('cpu')):
 
         super(GCNModelAE, self).__init__()
 
+        self.device = device
         self.args = args
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
@@ -291,10 +292,11 @@ class GCNModelVAECD(nn.Module):
                 print(name, param.data,param.data.shape)
 
 class NEC(nn.Module):
-    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args,device):
         super(NEC, self).__init__()
 
         self.args = args
+        device = self.device
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.dc = InnerProductDecoder(dropout, act=torch.sigmoid)
@@ -331,9 +333,9 @@ class NEC(nn.Module):
         H_norm = n.sqrt()*H.sqrt()/(H.sqrt().sum())
         # print("H_norm shape",H_norm.shape)
         # print("H_norm ",H_norm)
-        m = (adj-torch.eye(adj.shape[0]).cuda()).sum()/2
-        D = (adj-torch.eye(adj.shape[0]).cuda()).sum(1) # the degree of nodes, adj includes self loop
-        B = (adj-torch.eye(adj.shape[0]).cuda())-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
+        m = (adj-torch.eye(adj.shape[0]).to(self.device)).sum()/2
+        D = (adj-torch.eye(adj.shape[0]).to(self.device)).sum(1) # the degree of nodes, adj includes self loop
+        B = (adj-torch.eye(adj.shape[0]).to(self.device))-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
         mod_loss=torch.trace(torch.matmul(torch.matmul(H_norm.t(),B),H_norm)/(4*m))
         # print("mod_loss",mod_loss)
         return mod_loss
@@ -410,7 +412,7 @@ class NEC(nn.Module):
         mod_loss=self.modularity_loss(z,adj)
 
         print('z shape mu_c shape',z.shape,self.mu_c.shape)
-        Q = self.getSoftAssignments(z,self.mu_c.cuda(),n_nodes)
+        Q = self.getSoftAssignments(z,self.mu_c.to(self.device),n_nodes)
 
         P = self.calculateP(Q)
 
@@ -422,7 +424,7 @@ class NEC(nn.Module):
 
     def predict_soft_assignment(self,z):
 
-        Q = self.getSoftAssignments(z,self.mu_c.cuda(),z.shape[0])
+        Q = self.getSoftAssignments(z,self.mu_c.to(self.device),z.shape[0])
         gamma_c = Q
         gamma=gamma_c.detach().cpu().numpy()
 
@@ -433,10 +435,11 @@ class NEC(nn.Module):
         self.mu_c = torch.nn.Parameter(torch.from_numpy(km.cluster_centers_))
 
 class DAEGCE(nn.Module):
-    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args,device):
         super(DAEGCE, self).__init__()
 
 
+        self.device = device
         self.args = args
         self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=4)
         self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=4)
@@ -496,7 +499,7 @@ class DAEGCE(nn.Module):
         pred_adj = self.decoder(z)
         L_rec = norm_u * F.binary_cross_entropy_with_logits(pred_adj, labels_sub_u, pos_weight = pos_weight_u)
 
-        self.Q = self.getSoftAssignments(z,self.mu_c.cuda(),n_nodes)
+        self.Q = self.getSoftAssignments(z,self.mu_c.to(self.device),n_nodes)
         self.P = self.calculateP(self.Q)
 
         if epoch>=200:
@@ -515,7 +518,7 @@ class DAEGCE(nn.Module):
 
     def predict_soft_assignment(self,z):
 
-        Q = self.getSoftAssignments(z,self.mu_c.cuda(),z.shape[0])
+        Q = self.getSoftAssignments(z,self.mu_c.to(self.device),z.shape[0])
         gamma_c = Q
         gamma=gamma_c.detach().cpu().numpy()
 
@@ -573,11 +576,12 @@ class DAEGCE(nn.Module):
         self.mu_c = torch.nn.Parameter(torch.from_numpy(km.cluster_centers_))
 
 class GCNModelVAECE(nn.Module):
-    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args):
+    def __init__(self, input_feat_dim, n_nodes, hidden_dim1, hidden_dim2, dropout,args,device):
         super(GCNModelVAECE, self).__init__()
 
 
         self.args = args
+        self.device = device
         self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
         self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
@@ -643,9 +647,9 @@ class GCNModelVAECE(nn.Module):
         H_norm = n.sqrt()*H.sqrt()/(H.sqrt().sum())
         # print("H_norm shape",H_norm.shape)
         # print("H_norm ",H_norm)
-        m = (adj-torch.eye(adj.shape[0]).cuda()).sum()/2
-        D = (adj-torch.eye(adj.shape[0]).cuda()).sum(1) # the degree of nodes, adj includes self loop
-        B = (adj-torch.eye(adj.shape[0]).cuda())-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
+        m = (adj-torch.eye(adj.shape[0]).to(self.device)).sum()/2
+        D = (adj-torch.eye(adj.shape[0]).to(self.device)).sum(1) # the degree of nodes, adj includes self loop
+        B = (adj-torch.eye(adj.shape[0]).to(self.device))-torch.matmul(D.view(-1,1),D.view(1,-1))/(2*m) # modularity matrix
         mod_loss=torch.trace(torch.matmul(torch.matmul(H_norm.t(),B),H_norm)/(4*m))
         # print("mod_loss",mod_loss)
 
@@ -795,7 +799,7 @@ class GCNModelVAECE(nn.Module):
 
         # print('z shape mu_c shape',z.shape,self.mu_c.shape)
 
-        Q = self.getSoftAssignments(z,self.mu_c.cuda(),n_nodes)
+        Q = self.getSoftAssignments(z,self.mu_c.to(self.device),n_nodes)
 
         P = self.calculateP(Q)
         # if epoch ==0:
@@ -906,7 +910,7 @@ class GCNModelVAECE(nn.Module):
         # z = torch.randn_like(mu) * torch.exp(z_sigma2_log / 2) + z_mu
         det=1e-10
         # z  = self.reparameterize(mu,logvar)
-        Q = self.getSoftAssignments(z,self.mu_c.cuda(),z.shape[0])
+        Q = self.getSoftAssignments(z,self.mu_c.to(self.device),z.shape[0])
 
         pi = self.pi_
         # log_sigma2_c = self.log_sigma2_c
@@ -1045,14 +1049,14 @@ class GCNModelVAECE(nn.Module):
         # self.pi_= torch.nn.Parameter(torch.from_numpy(gmm.weights_))
         # self.mu_c = torch.nn.Parameter(torch.from_numpy(gmm.means_))
         # self.log_sigma2_c = torch.nn.Parameter(torch.from_numpy(gmm.covariances_))
-        if self.args.cuda>=0:
-            self.pi_= torch.nn.Parameter(torch.from_numpy(gmm.weights_).float().to('cuda'))
-            self.mu_c = torch.nn.Parameter(torch.from_numpy(gmm.means_).to('cuda'))
-            self.log_sigma2_c = torch.nn.Parameter(torch.from_numpy(gmm.covariances_).to('cuda'))
-        else:
-            self.pi_= torch.nn.Parameter(torch.from_numpy(gmm.weights_),requires_grad=False)
-            self.mu_c = torch.nn.Parameter(torch.from_numpy(gmm.means_))
-            self.log_sigma2_c = torch.nn.Parameter(torch.from_numpy(gmm.covariances_),requires_grad=False)
+        # if self.args.cuda>=0:
+        self.pi_= torch.nn.Parameter(torch.from_numpy(gmm.weights_).float().to(self.device))
+        self.mu_c = torch.nn.Parameter(torch.from_numpy(gmm.means_).to(self.device))
+        self.log_sigma2_c = torch.nn.Parameter(torch.from_numpy(gmm.covariances_).to(self.device))
+        # else:
+            # self.pi_= torch.nn.Parameter(torch.from_numpy(gmm.weights_),requires_grad=False)
+            # self.mu_c = torch.nn.Parameter(torch.from_numpy(gmm.means_))
+            # self.log_sigma2_c = torch.nn.Parameter(torch.from_numpy(gmm.covariances_),requires_grad=False)
 
         # print(self.mu_c)
         print("check cluster parameter device",'\npi',self.pi_.device,"\nmu_c device",self.mu_c.device,'\nlog_sigma2 device', self.log_sigma2_c.device)

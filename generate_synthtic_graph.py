@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from networkx.generators import erdos_renyi_graph
+import sys
 
 attribute_size = 1000
 
@@ -55,9 +56,9 @@ def save_graph(num_nodes,density,G,fea_matrix,label):
 
 
 if __name__=="__main__":
-    num_nodes = 1000
-    density = 0.1
-    G,fea_matrix,label = generate_graphs(num_nodes,density)
+    num_nodes = int(sys.argv[1])
+    density = float(sys.argv[2])
+    G,fea_matrix,label = generate_graphs(int(num_nodes),float(density))
     save_graph(num_nodes,density,G,fea_matrix,label)
     print("Done")
 
