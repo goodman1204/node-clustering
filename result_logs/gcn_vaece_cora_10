@@ -1,0 +1,19 @@
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:10,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1
+H	0.0036	0.0036	0.0
+C	0.0035	0.0035	0.0
+V	0.0035	0.0035	0.0
+Ari	-0.0004	-0.0004	0.0
+Ami	-0.0001	-0.0001	0.0
+Nmi	0.0035	0.0035	0.0
+purity	0.3021	0.3021	0.0
+accuracy	0.1739	0.1739	0.0
+f1	0.1435	0.1435	0.0
+precision	0.1731	0.1731	0.0
+recall	0.1429	0.1429	0.0
+entropy	0.1772	0.1772	0.0
+time	1.109	1.109	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.0035 &0.3021 &-0.0004 &0.1435 &0.1731 &0.1429 &0.1772 &

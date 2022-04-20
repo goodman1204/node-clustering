@@ -57,3 +57,22 @@ mean list for latex table
 
 
 
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20
+H	0.2363	0.2363	0.0
+C	0.2608	0.2608	0.0
+V	0.248	0.248	0.0
+Ari	0.1533	0.1533	0.0
+Ami	0.2462	0.2462	0.0
+Nmi	0.248	0.248	0.0
+purity	0.4974	0.4974	0.0
+accuracy	0.428	0.428	0.0
+f1	0.4324	0.4324	0.0
+precision	0.5604	0.5604	0.0
+recall	0.428	0.428	0.0
+entropy	0.2375	0.2375	0.0
+time	26.8487	26.8487	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.248 &0.4974 &0.1533 &0.4324 &0.5604 &0.428 &0.2375 &

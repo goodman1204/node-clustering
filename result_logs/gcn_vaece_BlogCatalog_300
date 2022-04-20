@@ -767,3 +767,22 @@ time	127.7981	94.253	92.6674	104.9062	16.2
 mean list for latex table
 'Nmi','purity','Ari','f1','precision','recall','entropy'
 0.2704 &0.4815 &0.2006 &0.4418 &0.4713 &0.4438 &0.0647 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1
+H	0.1405	0.1405	0.0
+C	0.1724	0.1724	0.0
+V	0.1548	0.1548	0.0
+Ari	0.1128	0.1128	0.0
+Ami	0.1537	0.1537	0.0
+Nmi	0.1548	0.1548	0.0
+purity	0.367	0.367	0.0
+accuracy	0.3657	0.3657	0.0
+f1	0.1046	0.1046	0.0
+precision	0.11	0.11	0.0
+recall	0.1101	0.1101	0.0
+entropy	1.1017	1.1017	0.0
+time	89.8078	89.8078	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.1548 &0.367 &0.1128 &0.1046 &0.11 &0.1101 &1.1017 &
