@@ -140,7 +140,7 @@ def training(args):
 
         # random.seed(args.seed)
         # np.random.seed(args.seed)
-        torch.manual_seed(args.seed)
+        # torch.manual_seed(args.seed)
 
         model = GCNModelVAECE(n_features,n_nodes, args.hidden1, args.hidden2, args.dropout,args,device)
 
@@ -173,9 +173,10 @@ def training(args):
 
             loss_list,[mu_u, logvar_u, mu_a, logvar_a,z] = model.loss(features_training,adj_norm,labels = (adj_label, features_label), n_nodes = n_nodes, n_features = n_features,norm = (norm_u, norm_a), pos_weight = (pos_weight_u, pos_weight_a))
 
-            # pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
-            # H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
-            # print("purity, NMI f1_score:",purity,nmi,f1_score)
+            if not args.test_efficiency:
+                pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+                H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
+                print("purity, NMI f1_score:",purity,nmi,f1_score)
 
             if epoch <args.pre_gmm:
                 if args.coembedding:
@@ -186,15 +187,15 @@ def training(args):
                 # model.change_nn_grad_true()
                 model.change_cluster_grad_false()
             else:
-                # if pretrain_flag == False:
-                    # pretrain_flag = True
-                    # print('pre_train',pretrain_flag)
-                    # gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
-                    # pre = gmm.fit_predict(z.cpu().detach().numpy())
-                    # H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
-                    # print("GMM purity, NMI:",purity,nmi)
-                    # # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
-                    # model.init_clustering_params(gmm)
+                if pretrain_flag == False:
+                    pretrain_flag = True
+                    print('pre_train',pretrain_flag)
+                    gmm = GaussianMixture(n_components=args.nClusters,covariance_type='diag')
+                    pre = gmm.fit_predict(z.cpu().detach().numpy())
+                    H, C, V, ari, ami, nmi, purity,f1_score,precision_score,recall  = clustering_evaluation(pre,Y)
+                    print("GMM purity, NMI:",purity,nmi)
+                    # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),Y,pre)
+                    model.init_clustering_params(gmm)
 
                 # all loss modules
                 if args.coembedding:
@@ -272,7 +273,7 @@ def training(args):
         else:
             pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
 
-        # pre = label_mapping(tru,pre)
+        pre = label_mapping(tru,pre)
 
         # with open("save_prediction.log",'w') as wp:
             # for label in pre:
@@ -370,6 +371,7 @@ def parse_args():
     parser.add_argument('--kmeans',type=int,default=0)
     parser.add_argument('--num_run',type=int,default=1,help='Number of running times')
     parser.add_argument('--cuda', type=int, default=0, help='training with GPU.')
+    parser.add_argument('--test_efficiency', type=int, default=0, help='test running time cost.')
     args, unknown = parser.parse_known_args()
 
     return args
@@ -380,7 +382,7 @@ if __name__ == '__main__':
         # torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
 
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
     training(args)
