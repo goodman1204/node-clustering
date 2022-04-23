@@ -1,0 +1,826 @@
+Using synthetic dataset
+dataset:synthetic_5000_0.1, node_num:5000,edge_num:1249513,attribute_num:1000
+imported graph edge number (without selfloop):624756.5
+cluster number:6
+node size:5000, feature size:1000
+graph edge number after mask:624756.5
+graph edge number after normalize adjacent matrix:624756.5
+Epoch: 0001 LR=0.0020 train_loss_total= 2.60634 train_loss_parts= [2.6009, 0.0054] link_pred_train_acc= 0.49876
+epoch time= 0.29351
+Epoch: 0002 LR=0.0020 train_loss_total= 2.64281 train_loss_parts= [2.6384, 0.0044] link_pred_train_acc= 0.49730
+epoch time= 0.29374
+Epoch: 0003 LR=0.0020 train_loss_total= 2.74015 train_loss_parts= [2.7335, 0.0066] link_pred_train_acc= 0.49693
+epoch time= 0.28935
+Epoch: 0004 LR=0.0020 train_loss_total= 2.45896 train_loss_parts= [2.4583, 0.0007] link_pred_train_acc= 0.49575
+epoch time= 0.29039
+Epoch: 0005 LR=0.0020 train_loss_total= 2.53340 train_loss_parts= [2.5313, 0.0021] link_pred_train_acc= 0.49540
+epoch time= 0.28831
+Epoch: 0006 LR=0.0020 train_loss_total= 2.46004 train_loss_parts= [2.4586, 0.0014] link_pred_train_acc= 0.49433
+epoch time= 0.32380
+Epoch: 0007 LR=0.0020 train_loss_total= 2.43758 train_loss_parts= [2.4368, 0.0008] link_pred_train_acc= 0.49395
+epoch time= 0.29115
+Epoch: 0008 LR=0.0020 train_loss_total= 2.40274 train_loss_parts= [2.402, 0.0007] link_pred_train_acc= 0.49406
+epoch time= 0.28920
+Epoch: 0009 LR=0.0020 train_loss_total= 2.38384 train_loss_parts= [2.3832, 0.0007] link_pred_train_acc= 0.49501
+epoch time= 0.29441
+Epoch: 0010 LR=0.0020 train_loss_total= 2.35992 train_loss_parts= [2.3593, 0.0006] link_pred_train_acc= 0.49330
+epoch time= 0.29100
+Optimization Finished!
+total time spend: 2.9448843002319336
+label mapping using Hungarian algorithm 
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Counter({3: 1136, 1: 996, 5: 991, 0: 950, 2: 864, 4: 63})
+label distribution for entropy
+true labels: [0.165, 0.1702, 0.1664, 0.1712, 0.1632, 0.164]
+pred labels: [0.19, 0.1992, 0.1728, 0.2272, 0.0126, 0.1982]
+Homogeneity:[0.0008]	 mean:0.0008	 std:0.0
+
+Completeness:[0.0008]	 mean:0.0008	 std:0.0
+
+V_measure_score:[0.0008]	 mean:0.0008	 std:0.0
+
+adjusted Rand Score:[-0.0004]	 mean:-0.0004	 std:0.0
+
+adjusted Mutual Information:[-0.0007]	 mean:-0.0007	 std:0.0
+
+Normalized Mutual Information:[0.0008]	 mean:0.0008	 std:0.0
+
+Purity:[0.1818]	 mean:0.1818	 std:0.0
+
+Accuracy:[0.179]	 mean:0.179	 std:0.0
+
+F1-score:[0.1659]	 mean:0.1659	 std:0.0
+
+precision_score:[0.1781]	 mean:0.1781	 std:0.0
+
+recall_score:[0.179]	 mean:0.179	 std:0.0
+
+entropy:[0.2822]	 mean:0.2822	 std:0.0
+
+True label distribution:[2 0 5 ... 3 2 3]
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Predicted label distribution:[1 0 3 ... 4 4 4]
+Counter({3: 1136, 1: 996, 5: 991, 0: 950, 2: 864, 4: 63})
+Using synthetic dataset
+dataset:synthetic_10000_0.1, node_num:10000,edge_num:4998996,attribute_num:1000
+imported graph edge number (without selfloop):2499498.0
+cluster number:6
+node size:10000, feature size:1000
+graph edge number after mask:2499498.0
+graph edge number after normalize adjacent matrix:2499498.0
+Epoch: 0001 LR=0.0020 train_loss_total= 19.90685 train_loss_parts= [14.9218, 4.985] link_pred_train_acc= 0.49918
+epoch time= 1.18665
+Epoch: 0002 LR=0.0020 train_loss_total= 5645.33496 train_loss_parts= [4019.2832, 1626.0516] link_pred_train_acc= 0.49872
+epoch time= 1.19608
+Epoch: 0003 LR=0.0020 train_loss_total= 8.90489 train_loss_parts= [7.6373, 1.2676] link_pred_train_acc= 0.49875
+epoch time= 1.22368
+Epoch: 0004 LR=0.0020 train_loss_total= 529.57867 train_loss_parts= [332.258, 197.3207] link_pred_train_acc= 0.49884
+epoch time= 1.23078
+Epoch: 0005 LR=0.0020 train_loss_total= 45.31313 train_loss_parts= [33.6319, 11.6812] link_pred_train_acc= 0.49771
+epoch time= 1.21294
+Epoch: 0006 LR=0.0020 train_loss_total= 142.52376 train_loss_parts= [98.8615, 43.6622] link_pred_train_acc= 0.49763
+epoch time= 1.23271
+Epoch: 0007 LR=0.0020 train_loss_total= 481.58383 train_loss_parts= [313.7316, 167.8523] link_pred_train_acc= 0.49713
+epoch time= 1.19923
+Epoch: 0008 LR=0.0020 train_loss_total= 56.48091 train_loss_parts= [35.5947, 20.8862] link_pred_train_acc= 0.49725
+epoch time= 1.31164
+Epoch: 0009 LR=0.0020 train_loss_total= 42.53100 train_loss_parts= [25.1289, 17.4021] link_pred_train_acc= 0.49702
+epoch time= 1.30039
+Epoch: 0010 LR=0.0020 train_loss_total= 46.51172 train_loss_parts= [30.1956, 16.3161] link_pred_train_acc= 0.49665
+epoch time= 1.20152
+Optimization Finished!
+total time spend: 12.29567265510559
+label mapping using Hungarian algorithm 
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Counter({4: 9994, 2: 2, 5: 1, 0: 1, 1: 1, 3: 1})
+label distribution for entropy
+true labels: [0.1679, 0.1673, 0.1665, 0.1667, 0.1676, 0.164]
+pred labels: [0.0001, 0.0001, 0.0002, 0.0001, 0.9994, 0.0001]
+Homogeneity:[0.0005]	 mean:0.0005	 std:0.0
+
+Completeness:[0.1559]	 mean:0.1559	 std:0.0
+
+V_measure_score:[0.001]	 mean:0.001	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.001]	 mean:0.001	 std:0.0
+
+Purity:[0.1681]	 mean:0.1681	 std:0.0
+
+Accuracy:[0.1679]	 mean:0.1679	 std:0.0
+
+F1-score:[0.0487]	 mean:0.0487	 std:0.0
+
+precision_score:[0.53]	 mean:0.53	 std:0.0
+
+recall_score:[0.1679]	 mean:0.1679	 std:0.0
+
+entropy:[5.7596]	 mean:5.7596	 std:0.0
+
+True label distribution:[1 3 4 ... 3 3 3]
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Predicted label distribution:[4 4 4 ... 4 4 3]
+Counter({4: 9994, 2: 2, 5: 1, 0: 1, 1: 1, 3: 1})
+Using synthetic dataset
+dataset:synthetic_15000_0.1, node_num:15000,edge_num:11247772,attribute_num:1000
+imported graph edge number (without selfloop):5623886.0
+cluster number:6
+node size:15000, feature size:1000
+graph edge number after mask:5623886.0
+graph edge number after normalize adjacent matrix:5623886.0
+Epoch: 0001 LR=0.0020 train_loss_total= 5.76870 train_loss_parts= [5.0396, 0.7291] link_pred_train_acc= 0.49901
+epoch time= 2.78734
+Epoch: 0002 LR=0.0020 train_loss_total= 2064315392.00000 train_loss_parts= [1208493696.0, 855821696.0] link_pred_train_acc= 0.49848
+epoch time= 2.90263
+Epoch: 0003 LR=0.0020 train_loss_total= 617.54645 train_loss_parts= [455.6217, 161.9247] link_pred_train_acc= 0.49769
+epoch time= 2.82285
+Epoch: 0004 LR=0.0020 train_loss_total= 2640.82202 train_loss_parts= [1117.3458, 1523.4762] link_pred_train_acc= 0.49627
+epoch time= 2.82717
+Epoch: 0005 LR=0.0020 train_loss_total= 41616.61328 train_loss_parts= [7253.4062, 34363.207] link_pred_train_acc= 0.49519
+epoch time= 2.82534
+Epoch: 0006 LR=0.0020 train_loss_total= 1780.85278 train_loss_parts= [584.5286, 1196.3241] link_pred_train_acc= 0.49373
+epoch time= 2.87983
+Epoch: 0007 LR=0.0020 train_loss_total= 12103.45801 train_loss_parts= [9230.4375, 2873.0203] link_pred_train_acc= 0.49364
+epoch time= 2.83747
+Epoch: 0008 LR=0.0020 train_loss_total= 1434.83203 train_loss_parts= [629.9596, 804.8725] link_pred_train_acc= 0.49338
+epoch time= 2.83071
+Epoch: 0009 LR=0.0020 train_loss_total= 557.05286 train_loss_parts= [323.3806, 233.6722] link_pred_train_acc= 0.49353
+epoch time= 2.82831
+Epoch: 0010 LR=0.0020 train_loss_total= 302.00009 train_loss_parts= [203.952, 98.0481] link_pred_train_acc= 0.49348
+epoch time= 2.83268
+Optimization Finished!
+total time spend: 28.374359607696533
+label mapping using Hungarian algorithm 
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Counter({5: 14994, 3: 2, 1: 1, 0: 1, 4: 1, 2: 1})
+label distribution for entropy
+true labels: [0.167, 0.16546666666666668, 0.1636, 0.16486666666666666, 0.16726666666666667, 0.1718]
+pred labels: [6.666666666666667e-05, 6.666666666666667e-05, 6.666666666666667e-05, 0.00013333333333333334, 6.666666666666667e-05, 0.9996]
+Homogeneity:[0.0004]	 mean:0.0004	 std:0.0
+
+Completeness:[0.1707]	 mean:0.1707	 std:0.0
+
+V_measure_score:[0.0008]	 mean:0.0008	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0001]	 mean:0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0008]	 mean:0.0008	 std:0.0
+
+Purity:[0.1719]	 mean:0.1719	 std:0.0
+
+Accuracy:[0.1717]	 mean:0.1717	 std:0.0
+
+F1-score:[0.0506]	 mean:0.0506	 std:0.0
+
+precision_score:[0.3622]	 mean:0.3622	 std:0.0
+
+recall_score:[0.1717]	 mean:0.1717	 std:0.0
+
+entropy:[6.058]	 mean:6.058	 std:0.0
+
+True label distribution:[2 0 3 ... 5 4 5]
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Predicted label distribution:[5 5 5 ... 0 4 2]
+Counter({5: 14994, 3: 2, 1: 1, 0: 1, 4: 1, 2: 1})
+Using synthetic dataset
+dataset:synthetic_20000_0.1, node_num:20000,edge_num:20004791,attribute_num:1000
+imported graph edge number (without selfloop):10002395.5
+cluster number:6
+node size:20000, feature size:1000
+graph edge number after mask:10002395.5
+graph edge number after normalize adjacent matrix:10002395.5
+Epoch: 0001 LR=0.0020 train_loss_total= 24896036.00000 train_loss_parts= [1430082.875, 23465954.0] link_pred_train_acc= 0.49889
+epoch time= 4.95602
+Epoch: 0002 LR=0.0020 train_loss_total= 8909183.00000 train_loss_parts= [962967.8125, 7946215.0] link_pred_train_acc= 0.49732
+epoch time= 5.03122
+Epoch: 0003 LR=0.0020 train_loss_total= 334457.68750 train_loss_parts= [184719.4844, 149738.1875] link_pred_train_acc= 0.49566
+epoch time= 5.00474
+Epoch: 0004 LR=0.0020 train_loss_total= 1295280766976.00000 train_loss_parts= [167313620992.0, 1127967096832.0] link_pred_train_acc= 0.49376
+epoch time= 5.05384
+Epoch: 0005 LR=0.0020 train_loss_total= 38747132.00000 train_loss_parts= [6978209.5, 31768922.0] link_pred_train_acc= 0.49522
+epoch time= 5.04447
+Epoch: 0006 LR=0.0020 train_loss_total= 23400878.00000 train_loss_parts= [4818611.5, 18582266.0] link_pred_train_acc= 0.49573
+epoch time= 5.05059
+Epoch: 0007 LR=0.0020 train_loss_total= 429417088.00000 train_loss_parts= [154349936.0, 275067168.0] link_pred_train_acc= 0.49664
+epoch time= 5.02777
+Epoch: 0008 LR=0.0020 train_loss_total= 3307729920.00000 train_loss_parts= [1588597760.0, 1719132288.0] link_pred_train_acc= 0.49646
+epoch time= 5.04674
+Epoch: 0009 LR=0.0020 train_loss_total= 164720753508352.00000 train_loss_parts= [3779841228800.0, 160940913852416.0] link_pred_train_acc= 0.49626
+epoch time= 5.03440
+Epoch: 0010 LR=0.0020 train_loss_total= 37990048.00000 train_loss_parts= [4027433.0, 33962616.0] link_pred_train_acc= 0.49582
+epoch time= 5.05284
+Optimization Finished!
+total time spend: 50.302675008773804
+label mapping using Hungarian algorithm 
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Counter({0: 19994, 1: 2, 4: 1, 2: 1, 3: 1, 5: 1})
+label distribution for entropy
+true labels: [0.1714, 0.1641, 0.1644, 0.169, 0.16545, 0.16565]
+pred labels: [0.9997, 0.0001, 5e-05, 5e-05, 5e-05, 5e-05]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.1461]	 mean:0.1461	 std:0.0
+
+V_measure_score:[0.0005]	 mean:0.0005	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0005]	 mean:0.0005	 std:0.0
+
+Purity:[0.1716]	 mean:0.1716	 std:0.0
+
+Accuracy:[0.1714]	 mean:0.1714	 std:0.0
+
+F1-score:[0.0504]	 mean:0.0504	 std:0.0
+
+precision_score:[0.4415]	 mean:0.4415	 std:0.0
+
+recall_score:[0.1714]	 mean:0.1714	 std:0.0
+
+entropy:[6.3007]	 mean:6.3007	 std:0.0
+
+True label distribution:[5 3 5 ... 1 2 5]
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Predicted label distribution:[0 0 0 ... 1 3 5]
+Counter({0: 19994, 1: 2, 4: 1, 2: 1, 3: 1, 5: 1})
+Using synthetic dataset
+dataset:synthetic_25000_0.1, node_num:25000,edge_num:31247935,attribute_num:1000
+imported graph edge number (without selfloop):15623967.5
+cluster number:6
+node size:25000, feature size:1000
+graph edge number after mask:15623967.5
+graph edge number after normalize adjacent matrix:15623967.5
+Epoch: 0001 LR=0.0020 train_loss_total= 18330.71094 train_loss_parts= [5669.6445, 12661.0674] link_pred_train_acc= 0.49883
+epoch time= 7.89365
+Epoch: 0002 LR=0.0020 train_loss_total= 781731.81250 train_loss_parts= [540939.625, 240792.2031] link_pred_train_acc= 0.49812
+epoch time= 8.08571
+Epoch: 0003 LR=0.0020 train_loss_total= 190479104.00000 train_loss_parts= [119832112.0, 70647000.0] link_pred_train_acc= 0.49774
+epoch time= 8.05507
+Epoch: 0004 LR=0.0020 train_loss_total= 125.40379 train_loss_parts= [71.7357, 53.6681] link_pred_train_acc= 0.49836
+epoch time= 8.05165
+Epoch: 0005 LR=0.0020 train_loss_total= 7831270.00000 train_loss_parts= [3585647.25, 4245623.0] link_pred_train_acc= 0.49782
+epoch time= 8.00407
+Epoch: 0006 LR=0.0020 train_loss_total= 46120024.00000 train_loss_parts= [24341030.0, 21778996.0] link_pred_train_acc= 0.49715
+epoch time= 8.11164
+Epoch: 0007 LR=0.0020 train_loss_total= 117174.09375 train_loss_parts= [66890.0391, 50284.0508] link_pred_train_acc= 0.49673
+epoch time= 8.06756
+Epoch: 0008 LR=0.0020 train_loss_total= 408941.96875 train_loss_parts= [64422.8711, 344519.0938] link_pred_train_acc= 0.49702
+epoch time= 8.09385
+Epoch: 0009 LR=0.0020 train_loss_total= 5222574.50000 train_loss_parts= [559235.8125, 4663338.5] link_pred_train_acc= 0.49631
+epoch time= 8.06339
+Epoch: 0010 LR=0.0020 train_loss_total= 15001082.00000 train_loss_parts= [8992187.0, 6008895.0] link_pred_train_acc= 0.49607
+epoch time= 8.07587
+Optimization Finished!
+total time spend: 80.50250244140625
+label mapping using Hungarian algorithm 
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Counter({4: 24995, 1: 1, 0: 1, 5: 1, 2: 1, 3: 1})
+label distribution for entropy
+true labels: [0.16432, 0.16564, 0.16756, 0.1652, 0.16964, 0.16764]
+pred labels: [4e-05, 4e-05, 4e-05, 4e-05, 0.9998, 4e-05]
+Homogeneity:[0.0002]	 mean:0.0002	 std:0.0
+
+Completeness:[0.1603]	 mean:0.1603	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1698]	 mean:0.1698	 std:0.0
+
+Accuracy:[0.1697]	 mean:0.1697	 std:0.0
+
+F1-score:[0.0494]	 mean:0.0494	 std:0.0
+
+precision_score:[0.5296]	 mean:0.5296	 std:0.0
+
+recall_score:[0.1697]	 mean:0.1697	 std:0.0
+
+entropy:[6.6171]	 mean:6.6171	 std:0.0
+
+True label distribution:[2 0 3 ... 0 2 4]
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Predicted label distribution:[4 4 4 ... 4 2 3]
+Counter({4: 24995, 1: 1, 0: 1, 5: 1, 2: 1, 3: 1})
+Using synthetic dataset
+dataset:synthetic_30000_0.1, node_num:30000,edge_num:44999484,attribute_num:1000
+imported graph edge number (without selfloop):22499742.0
+cluster number:6
+node size:30000, feature size:1000
+graph edge number after mask:22499742.0
+graph edge number after normalize adjacent matrix:22499742.0
+Epoch: 0001 LR=0.0020 train_loss_total= 11768.55078 train_loss_parts= [4750.9258, 7017.6255] link_pred_train_acc= 0.49886
+epoch time= 11.77096
+Epoch: 0002 LR=0.0020 train_loss_total= 59433.07031 train_loss_parts= [30630.9922, 28802.0801] link_pred_train_acc= 0.49782
+epoch time= 11.84918
+Epoch: 0003 LR=0.0020 train_loss_total= 19903232.00000 train_loss_parts= [3197363.75, 16705868.0] link_pred_train_acc= 0.49623
+epoch time= 11.88201
+Epoch: 0004 LR=0.0020 train_loss_total= 9114816.00000 train_loss_parts= [4007938.75, 5106877.5] link_pred_train_acc= 0.49692
+epoch time= 11.92625
+Epoch: 0005 LR=0.0020 train_loss_total= 15.02595 train_loss_parts= [13.4571, 1.5689] link_pred_train_acc= 0.49664
+epoch time= 11.85032
+Epoch: 0006 LR=0.0020 train_loss_total= 27454758.00000 train_loss_parts= [15625087.0, 11829671.0] link_pred_train_acc= 0.49703
+epoch time= 11.89768
+Epoch: 0007 LR=0.0020 train_loss_total= 3.61402 train_loss_parts= [3.459, 0.155] link_pred_train_acc= 0.49649
+epoch time= 11.85131
+Epoch: 0008 LR=0.0020 train_loss_total= 2.35028 train_loss_parts= [2.3501, 0.0001] link_pred_train_acc= 0.49596
+epoch time= 11.83794
+Epoch: 0009 LR=0.0020 train_loss_total= 2.59448 train_loss_parts= [2.5891, 0.0054] link_pred_train_acc= 0.49593
+epoch time= 11.79962
+Epoch: 0010 LR=0.0020 train_loss_total= 12.82401 train_loss_parts= [7.1176, 5.7064] link_pred_train_acc= 0.49529
+epoch time= 11.85028
+Optimization Finished!
+total time spend: 118.51558065414429
+label mapping using Hungarian algorithm 
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Counter({3: 29990, 4: 6, 2: 1, 1: 1, 5: 1, 0: 1})
+label distribution for entropy
+true labels: [0.16833333333333333, 0.16393333333333332, 0.16506666666666667, 0.17143333333333333, 0.1634, 0.16783333333333333]
+pred labels: [3.3333333333333335e-05, 3.3333333333333335e-05, 3.3333333333333335e-05, 0.9996666666666667, 0.0002, 3.3333333333333335e-05]
+Homogeneity:[0.0002]	 mean:0.0002	 std:0.0
+
+Completeness:[0.1025]	 mean:0.1025	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1716]	 mean:0.1716	 std:0.0
+
+Accuracy:[0.1716]	 mean:0.1716	 std:0.0
+
+F1-score:[0.0506]	 mean:0.0506	 std:0.0
+
+precision_score:[0.6112]	 mean:0.6112	 std:0.0
+
+recall_score:[0.1716]	 mean:0.1716	 std:0.0
+
+entropy:[6.4573]	 mean:6.4573	 std:0.0
+
+True label distribution:[4 1 1 ... 3 3 4]
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Predicted label distribution:[3 3 3 ... 3 3 4]
+Counter({3: 29990, 4: 6, 2: 1, 1: 1, 5: 1, 0: 1})
+Using synthetic dataset
+dataset:synthetic_35000_0.1, node_num:35000,edge_num:61247986,attribute_num:1000
+imported graph edge number (without selfloop):30623993.0
+cluster number:6
+node size:35000, feature size:1000
+graph edge number after mask:30623993.0
+graph edge number after normalize adjacent matrix:30623993.0
+Epoch: 0001 LR=0.0020 train_loss_total= 1197.25916 train_loss_parts= [277.4264, 919.8328] link_pred_train_acc= 0.49890
+epoch time= 16.39390
+Epoch: 0002 LR=0.0020 train_loss_total= 3885730717409214464.00000 train_loss_parts= [2.4201328964141056e+16, 3.861529366970237e+18] link_pred_train_acc= 0.49783
+epoch time= 16.66832
+Epoch: 0003 LR=0.0020 train_loss_total= 64746979879550976.00000 train_loss_parts= [3907932223700992.0, 6.083904926646272e+16] link_pred_train_acc= 0.49770
+epoch time= 16.53955
+Epoch: 0004 LR=0.0020 train_loss_total= 448326141103570944.00000 train_loss_parts= [2856977617125376.0, 4.454691632180101e+17] link_pred_train_acc= 0.49658
+epoch time= 16.60057
+Epoch: 0005 LR=0.0020 train_loss_total= 328363430174837964800.00000 train_loss_parts= [2.2927348033860403e+17, 3.2813416880630714e+20] link_pred_train_acc= 0.49561
+epoch time= 16.58863
+Epoch: 0006 LR=0.0020 train_loss_total= 1901280432562351636480.00000 train_loss_parts= [1.523986447967296e+20, 1.748881717396878e+21] link_pred_train_acc= 0.49528
+epoch time= 16.66264
+Epoch: 0007 LR=0.0020 train_loss_total= 1629506913136493461504.00000 train_loss_parts= [1.137391342669162e+19, 1.618132931540081e+21] link_pred_train_acc= 0.49579
+epoch time= 16.62671
+Epoch: 0008 LR=0.0020 train_loss_total= 1802027992912035315712.00000 train_loss_parts= [1.226487958451572e+19, 1.7897631430143335e+21] link_pred_train_acc= 0.49573
+epoch time= 16.67871
+Epoch: 0009 LR=0.0020 train_loss_total= 1912385887030982213632.00000 train_loss_parts= [1.2263074846129888e+20, 1.7897551209774973e+21] link_pred_train_acc= 0.49598
+epoch time= 16.61965
+Epoch: 0010 LR=0.0020 train_loss_total= 1793607668983736041472.00000 train_loss_parts= [3.860572516976165e+18, 1.789747098940661e+21] link_pred_train_acc= 0.49619
+epoch time= 16.70715
+Optimization Finished!
+total time spend: 166.08587288856506
+label mapping using Hungarian algorithm 
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Counter({1: 34995, 0: 1, 4: 1, 5: 1, 3: 1, 2: 1})
+label distribution for entropy
+true labels: [0.16651428571428573, 0.17054285714285713, 0.16645714285714286, 0.16537142857142856, 0.16682857142857144, 0.16428571428571428]
+pred labels: [2.857142857142857e-05, 0.9998571428571429, 2.857142857142857e-05, 2.857142857142857e-05, 2.857142857142857e-05, 2.857142857142857e-05]
+Homogeneity:[0.0001]	 mean:0.0001	 std:0.0
+
+Completeness:[0.1562]	 mean:0.1562	 std:0.0
+
+V_measure_score:[0.0003]	 mean:0.0003	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0003]	 mean:0.0003	 std:0.0
+
+Purity:[0.1707]	 mean:0.1707	 std:0.0
+
+Accuracy:[0.1706]	 mean:0.1706	 std:0.0
+
+F1-score:[0.0499]	 mean:0.0499	 std:0.0
+
+precision_score:[0.5277]	 mean:0.5277	 std:0.0
+
+recall_score:[0.1706]	 mean:0.1706	 std:0.0
+
+entropy:[6.887]	 mean:6.887	 std:0.0
+
+True label distribution:[2 1 4 ... 3 3 2]
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Predicted label distribution:[1 1 1 ... 3 1 2]
+Counter({1: 34995, 0: 1, 4: 1, 5: 1, 3: 1, 2: 1})
+Using synthetic dataset
+dataset:synthetic_5000_0.1, node_num:5000,edge_num:1249513,attribute_num:1000
+imported graph edge number (without selfloop):624756.5
+cluster number:6
+node size:5000, feature size:1000
+graph edge number after mask:624756.5
+graph edge number after normalize adjacent matrix:624756.5
+Epoch: 0001 LR=0.0020 train_loss_total= 5.46858 train_loss_parts= [2.6163, 2.8386, 0.0074, 0.0064] link_pred_train_acc= 0.49836 time= 0.33869
+Epoch: 0002 LR=0.0020 train_loss_total= 5.06482 train_loss_parts= [2.5649, 2.49, 0.0052, 0.0047] link_pred_train_acc= 0.49732 time= 0.34889
+Epoch: 0003 LR=0.0020 train_loss_total= 4.81338 train_loss_parts= [2.545, 2.2604, 0.0031, 0.0049] link_pred_train_acc= 0.49667 time= 0.32853
+Epoch: 0004 LR=0.0020 train_loss_total= 4.71671 train_loss_parts= [2.5826, 2.1228, 0.0054, 0.0059] link_pred_train_acc= 0.49588 time= 0.33175
+Epoch: 0005 LR=0.0020 train_loss_total= 4.52527 train_loss_parts= [2.5406, 1.9711, 0.0064, 0.0072] link_pred_train_acc= 0.49619 time= 0.34571
+Epoch: 0006 LR=0.0020 train_loss_total= 4.22525 train_loss_parts= [2.4087, 1.8068, 0.0011, 0.0087] link_pred_train_acc= 0.49601 time= 0.33100
+Epoch: 0007 LR=0.0020 train_loss_total= 4.13493 train_loss_parts= [2.4332, 1.6902, 0.0014, 0.0103] link_pred_train_acc= 0.49623 time= 0.32849
+Epoch: 0008 LR=0.0020 train_loss_total= 3.90927 train_loss_parts= [2.3375, 1.5592, 0.0006, 0.012] link_pred_train_acc= 0.49727 time= 0.36725
+Epoch: 0009 LR=0.0020 train_loss_total= 3.81010 train_loss_parts= [2.3346, 1.4611, 0.0006, 0.0138] link_pred_train_acc= 0.49683 time= 0.32963
+Epoch: 0010 LR=0.0020 train_loss_total= 3.73026 train_loss_parts= [2.3374, 1.3765, 0.0006, 0.0157] link_pred_train_acc= 0.49744 time= 0.32365
+Optimization Finished!
+total time spend: 3.3737120628356934
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Counter({3: 1052, 4: 1040, 2: 974, 1: 951, 0: 929, 5: 54})
+label distribution for entropy
+true labels: [0.165, 0.1702, 0.1664, 0.1712, 0.1632, 0.164]
+pred labels: [0.1858, 0.1902, 0.1948, 0.2104, 0.208, 0.0108]
+Homogeneity:[0.0011]	 mean:0.0011	 std:0.0
+
+Completeness:[0.0012]	 mean:0.0012	 std:0.0
+
+V_measure_score:[0.0011]	 mean:0.0011	 std:0.0
+
+adjusted Rand Score:[-0.0001]	 mean:-0.0001	 std:0.0
+
+adjusted Mutual Information:[-0.0003]	 mean:-0.0003	 std:0.0
+
+Normalized Mutual Information:[0.0011]	 mean:0.0011	 std:0.0
+
+Purity:[0.1836]	 mean:0.1836	 std:0.0
+
+Accuracy:[0.183]	 mean:0.183	 std:0.0
+
+F1-score:[0.1692]	 mean:0.1692	 std:0.0
+
+precision_score:[0.1804]	 mean:0.1804	 std:0.0
+
+recall_score:[0.183]	 mean:0.183	 std:0.0
+
+entropy:[0.3065]	 mean:0.3065	 std:0.0
+
+True label distribution:[2 0 5 ... 3 2 3]
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Predicted label distribution:[0 2 1 ... 5 5 5]
+Counter({3: 1052, 4: 1040, 2: 974, 1: 951, 0: 929, 5: 54})
+Using synthetic dataset
+dataset:synthetic_10000_0.1, node_num:10000,edge_num:4998996,attribute_num:1000
+imported graph edge number (without selfloop):2499498.0
+cluster number:6
+node size:10000, feature size:1000
+graph edge number after mask:2499498.0
+graph edge number after normalize adjacent matrix:2499498.0
+Epoch: 0001 LR=0.0020 train_loss_total= 5.52807 train_loss_parts= [2.5846, 2.9352, 0.0025, 0.0058] link_pred_train_acc= 0.49870 time= 1.33997
+Epoch: 0002 LR=0.0020 train_loss_total= 5.06155 train_loss_parts= [2.6345, 2.4077, 0.0153, 0.004] link_pred_train_acc= 0.49685 time= 1.30099
+Epoch: 0003 LR=0.0020 train_loss_total= 4.66116 train_loss_parts= [2.5892, 2.0595, 0.0063, 0.0062] link_pred_train_acc= 0.49555 time= 1.28935
+Epoch: 0004 LR=0.0020 train_loss_total= 4.24882 train_loss_parts= [2.4381, 1.8007, 0.0008, 0.0091] link_pred_train_acc= 0.49510 time= 1.41223
+Epoch: 0005 LR=0.0020 train_loss_total= 4.07152 train_loss_parts= [2.4575, 1.6008, 0.0012, 0.012] link_pred_train_acc= 0.49454 time= 1.28759
+Epoch: 0006 LR=0.0020 train_loss_total= 3.97112 train_loss_parts= [2.4829, 1.4725, 0.0009, 0.0148] link_pred_train_acc= 0.49408 time= 1.31653
+Epoch: 0007 LR=0.0020 train_loss_total= 3.82331 train_loss_parts= [2.471, 1.3339, 0.0008, 0.0176] link_pred_train_acc= 0.49443 time= 1.33214
+Epoch: 0008 LR=0.0020 train_loss_total= 3.75690 train_loss_parts= [2.5076, 1.2273, 0.0014, 0.0206] link_pred_train_acc= 0.49430 time= 1.32381
+Epoch: 0009 LR=0.0020 train_loss_total= 3.60175 train_loss_parts= [2.4468, 1.1302, 0.001, 0.0237] link_pred_train_acc= 0.49326 time= 1.45421
+Epoch: 0010 LR=0.0020 train_loss_total= 3.51656 train_loss_parts= [2.4231, 1.0659, 0.0007, 0.0268] link_pred_train_acc= 0.49361 time= 1.31181
+Optimization Finished!
+total time spend: 13.368778705596924
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Counter({1: 3781, 3: 3750, 0: 2396, 4: 67, 5: 5, 2: 1})
+label distribution for entropy
+true labels: [0.1679, 0.1673, 0.1665, 0.1667, 0.1676, 0.164]
+pred labels: [0.2396, 0.3781, 0.0001, 0.375, 0.0067, 0.0005]
+Homogeneity:[0.001]	 mean:0.001	 std:0.0
+
+Completeness:[0.0016]	 mean:0.0016	 std:0.0
+
+V_measure_score:[0.0012]	 mean:0.0012	 std:0.0
+
+adjusted Rand Score:[0.0002]	 mean:0.0002	 std:0.0
+
+adjusted Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Normalized Mutual Information:[0.0012]	 mean:0.0012	 std:0.0
+
+Purity:[0.1781]	 mean:0.1781	 std:0.0
+
+Accuracy:[0.1775]	 mean:0.1775	 std:0.0
+
+F1-score:[0.1198]	 mean:0.1198	 std:0.0
+
+precision_score:[0.1497]	 mean:0.1497	 std:0.0
+
+recall_score:[0.1775]	 mean:0.1775	 std:0.0
+
+entropy:[2.3934]	 mean:2.3934	 std:0.0
+
+True label distribution:[1 3 4 ... 3 3 3]
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Predicted label distribution:[1 3 3 ... 5 5 5]
+Counter({1: 3781, 3: 3750, 0: 2396, 4: 67, 5: 5, 2: 1})
+Using synthetic dataset
+dataset:synthetic_15000_0.1, node_num:15000,edge_num:11247772,attribute_num:1000
+imported graph edge number (without selfloop):5623886.0
+cluster number:6
+node size:15000, feature size:1000
+graph edge number after mask:5623886.0
+graph edge number after normalize adjacent matrix:5623886.0
+Epoch: 0001 LR=0.0020 train_loss_total= 5.58846 train_loss_parts= [2.674, 2.9005, 0.0065, 0.0074] link_pred_train_acc= 0.49928 time= 2.99542
+Epoch: 0002 LR=0.0020 train_loss_total= 3917.29712 train_loss_parts= [2816.0874, 33.8674, 1067.3363, 0.0062] link_pred_train_acc= 0.49931 time= 2.95917
+Epoch: 0003 LR=0.0020 train_loss_total= 5.19973 train_loss_parts= [2.8621, 2.302, 0.0267, 0.0089] link_pred_train_acc= 0.49827 time= 2.98347
+Epoch: 0004 LR=0.0020 train_loss_total= 43700.75781 train_loss_parts= [21374.8848, 107.6851, 22218.1758, 0.0121] link_pred_train_acc= 0.49849 time= 2.94069
+Epoch: 0005 LR=0.0020 train_loss_total= 24.93049 train_loss_parts= [17.7516, 4.0507, 3.1142, 0.014] link_pred_train_acc= 0.49779 time= 2.94096
+Epoch: 0006 LR=0.0020 train_loss_total= 200.72617 train_loss_parts= [105.0681, 7.7129, 87.9292, 0.016] link_pred_train_acc= 0.49742 time= 2.92115
+Epoch: 0007 LR=0.0020 train_loss_total= 750.14929 train_loss_parts= [280.0395, 13.4976, 456.5943, 0.018] link_pred_train_acc= 0.49690 time= 2.92751
+Epoch: 0008 LR=0.0020 train_loss_total= 2449.12256 train_loss_parts= [1598.9747, 31.286, 818.8419, 0.02] link_pred_train_acc= 0.49610 time= 2.92255
+Epoch: 0009 LR=0.0020 train_loss_total= 13783.52344 train_loss_parts= [10564.9463, 44.6211, 3173.9338, 0.0222] link_pred_train_acc= 0.49708 time= 2.93576
+Epoch: 0010 LR=0.0020 train_loss_total= 5171.10254 train_loss_parts= [3787.6431, 38.9832, 1344.4524, 0.0241] link_pred_train_acc= 0.49665 time= 2.93271
+Optimization Finished!
+total time spend: 29.459523677825928
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Counter({5: 14992, 0: 4, 2: 1, 4: 1, 3: 1, 1: 1})
+label distribution for entropy
+true labels: [0.167, 0.16546666666666668, 0.1636, 0.16486666666666666, 0.16726666666666667, 0.1718]
+pred labels: [0.0002666666666666667, 6.666666666666667e-05, 6.666666666666667e-05, 6.666666666666667e-05, 6.666666666666667e-05, 0.9994666666666666]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.1095]	 mean:0.1095	 std:0.0
+
+V_measure_score:[0.0006]	 mean:0.0006	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0001]	 mean:-0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0006]	 mean:0.0006	 std:0.0
+
+Purity:[0.1719]	 mean:0.1719	 std:0.0
+
+Accuracy:[0.1716]	 mean:0.1716	 std:0.0
+
+F1-score:[0.0505]	 mean:0.0505	 std:0.0
+
+precision_score:[0.0712]	 mean:0.0712	 std:0.0
+
+recall_score:[0.1716]	 mean:0.1716	 std:0.0
+
+entropy:[5.9408]	 mean:5.9408	 std:0.0
+
+True label distribution:[2 0 3 ... 5 4 5]
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Predicted label distribution:[5 5 5 ... 3 0 1]
+Counter({5: 14992, 0: 4, 2: 1, 4: 1, 3: 1, 1: 1})
+Using synthetic dataset
+dataset:synthetic_20000_0.1, node_num:20000,edge_num:20004791,attribute_num:1000
+imported graph edge number (without selfloop):10002395.5
+cluster number:6
+node size:20000, feature size:1000
+graph edge number after mask:10002395.5
+graph edge number after normalize adjacent matrix:10002395.5
+Epoch: 0001 LR=0.0020 train_loss_total= 10190.76562 train_loss_parts= [1075.025, 40.9292, 9074.8057, 0.0063] link_pred_train_acc= 0.49753 time= 5.19734
+Epoch: 0002 LR=0.0020 train_loss_total= 26.17541 train_loss_parts= [12.3181, 5.7797, 8.0624, 0.0152] link_pred_train_acc= 0.49514 time= 5.23497
+Epoch: 0003 LR=0.0020 train_loss_total= 3779.85107 train_loss_parts= [1968.6938, 41.153, 1769.9794, 0.0249] link_pred_train_acc= 0.49484 time= 5.26298
+Epoch: 0004 LR=0.0020 train_loss_total= 236909232.00000 train_loss_parts= [76238264.0, 8100.5151, 160662864.0, 0.026] link_pred_train_acc= 0.49433 time= 5.23776
+Epoch: 0005 LR=0.0020 train_loss_total= 5662.59863 train_loss_parts= [2545.2983, 78.1126, 3039.1616, 0.0264] link_pred_train_acc= 0.49460 time= 5.19705
+Epoch: 0006 LR=0.0020 train_loss_total= 3235.54272 train_loss_parts= [1164.0771, 31.5828, 2039.8538, 0.029] link_pred_train_acc= 0.49436 time= 5.21733
+Epoch: 0007 LR=0.0020 train_loss_total= 5668363.50000 train_loss_parts= [1857208.75, 892.1719, 3810262.5, 0.0331] link_pred_train_acc= 0.49462 time= 5.22678
+Epoch: 0008 LR=0.0020 train_loss_total= 99107184.00000 train_loss_parts= [22097536.0, 4429.6509, 77005216.0, 0.0376] link_pred_train_acc= 0.49381 time= 5.25699
+Epoch: 0009 LR=0.0020 train_loss_total= 16603026.00000 train_loss_parts= [1157376.375, 935.0951, 15444715.0, 0.0416] link_pred_train_acc= 0.49304 time= 5.26635
+Epoch: 0010 LR=0.0020 train_loss_total= 2182760.25000 train_loss_parts= [386348.9688, 347.6143, 1796063.625, 0.0451] link_pred_train_acc= 0.49194 time= 5.26949
+Optimization Finished!
+total time spend: 52.367148876190186
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Counter({0: 19995, 4: 1, 2: 1, 1: 1, 3: 1, 5: 1})
+label distribution for entropy
+true labels: [0.1714, 0.1641, 0.1644, 0.169, 0.16545, 0.16565]
+pred labels: [0.99975, 5e-05, 5e-05, 5e-05, 5e-05, 5e-05]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.1647]	 mean:0.1647	 std:0.0
+
+V_measure_score:[0.0005]	 mean:0.0005	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0005]	 mean:0.0005	 std:0.0
+
+Purity:[0.1716]	 mean:0.1716	 std:0.0
+
+Accuracy:[0.1715]	 mean:0.1715	 std:0.0
+
+F1-score:[0.0505]	 mean:0.0505	 std:0.0
+
+precision_score:[0.5235]	 mean:0.5235	 std:0.0
+
+recall_score:[0.1715]	 mean:0.1715	 std:0.0
+
+entropy:[6.4144]	 mean:6.4144	 std:0.0
+
+True label distribution:[5 3 5 ... 1 2 5]
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Predicted label distribution:[0 0 0 ... 1 3 5]
+Counter({0: 19995, 4: 1, 2: 1, 1: 1, 3: 1, 5: 1})
+Using synthetic dataset
+dataset:synthetic_25000_0.1, node_num:25000,edge_num:31247935,attribute_num:1000
+imported graph edge number (without selfloop):15623967.5
+cluster number:6
+node size:25000, feature size:1000
+graph edge number after mask:15623967.5
+graph edge number after normalize adjacent matrix:15623967.5
+Epoch: 0001 LR=0.0020 train_loss_total= 19471.66406 train_loss_parts= [4193.7295, 51.5571, 15226.3711, 0.0056] link_pred_train_acc= 0.49773 time= 8.33198
+Epoch: 0002 LR=0.0020 train_loss_total= 7410.64551 train_loss_parts= [2554.3015, 47.1527, 4809.1772, 0.0142] link_pred_train_acc= 0.49678 time= 8.40399
+Epoch: 0003 LR=0.0020 train_loss_total= 488425216.00000 train_loss_parts= [326470496.0, 24245.7715, 161930480.0, 0.0228] link_pred_train_acc= 0.49686 time= 8.42599
+Epoch: 0004 LR=0.0020 train_loss_total= 1423290112.00000 train_loss_parts= [283802912.0, 32763.5293, 1139454464.0, 0.0204] link_pred_train_acc= 0.49697 time= 8.46446
+Epoch: 0005 LR=0.0020 train_loss_total= 101.69489 train_loss_parts= [69.6629, 12.5371, 19.4734, 0.0215] link_pred_train_acc= 0.49705 time= 8.36514
+Epoch: 0006 LR=0.0020 train_loss_total= 438.03864 train_loss_parts= [158.5593, 12.4821, 266.9728, 0.0244] link_pred_train_acc= 0.49690 time= 8.44899
+Epoch: 0007 LR=0.0020 train_loss_total= 4013.48657 train_loss_parts= [2935.3872, 57.2202, 1020.8512, 0.0282] link_pred_train_acc= 0.49671 time= 8.38379
+Epoch: 0008 LR=0.0020 train_loss_total= 17257.48047 train_loss_parts= [7330.2559, 127.7105, 9799.4805, 0.0325] link_pred_train_acc= 0.49633 time= 8.38538
+Epoch: 0009 LR=0.0020 train_loss_total= 9040.03027 train_loss_parts= [2957.9822, 71.0037, 6011.0073, 0.0369] link_pred_train_acc= 0.49594 time= 8.38868
+Epoch: 0010 LR=0.0020 train_loss_total= 177071.32812 train_loss_parts= [75819.2109, 176.1906, 101075.8828, 0.0413] link_pred_train_acc= 0.49539 time= 8.42931
+Optimization Finished!
+total time spend: 84.02785181999207
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Counter({4: 24995, 0: 1, 1: 1, 5: 1, 2: 1, 3: 1})
+label distribution for entropy
+true labels: [0.16432, 0.16564, 0.16756, 0.1652, 0.16964, 0.16764]
+pred labels: [4e-05, 4e-05, 4e-05, 4e-05, 0.9998, 4e-05]
+Homogeneity:[0.0002]	 mean:0.0002	 std:0.0
+
+Completeness:[0.1609]	 mean:0.1609	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1698]	 mean:0.1698	 std:0.0
+
+Accuracy:[0.1698]	 mean:0.1698	 std:0.0
+
+F1-score:[0.0495]	 mean:0.0495	 std:0.0
+
+precision_score:[0.6939]	 mean:0.6939	 std:0.0
+
+recall_score:[0.1698]	 mean:0.1698	 std:0.0
+
+entropy:[6.6171]	 mean:6.6171	 std:0.0
+
+True label distribution:[2 0 3 ... 0 2 4]
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Predicted label distribution:[4 4 4 ... 4 2 3]
+Counter({4: 24995, 0: 1, 1: 1, 5: 1, 2: 1, 3: 1})
+Using synthetic dataset
+dataset:synthetic_30000_0.1, node_num:30000,edge_num:44999484,attribute_num:1000
+imported graph edge number (without selfloop):22499742.0
+cluster number:6
+node size:30000, feature size:1000
+graph edge number after mask:22499742.0
+graph edge number after normalize adjacent matrix:22499742.0
+Epoch: 0001 LR=0.0020 train_loss_total= 16.19888 train_loss_parts= [8.2581, 4.4104, 3.5241, 0.0063] link_pred_train_acc= 0.49850 time= 12.06659
+Epoch: 0002 LR=0.0020 train_loss_total= 148215513088.00000 train_loss_parts= [30143690752.0, 320103.625, 118071500800.0, 0.0097] link_pred_train_acc= 0.49722 time= 12.22571
+Epoch: 0003 LR=0.0020 train_loss_total= 15361294336.00000 train_loss_parts= [1671862784.0, 93180.1719, 13689338880.0, 0.0172] link_pred_train_acc= 0.49624 time= 12.17131
+Epoch: 0004 LR=0.0020 train_loss_total= 745538977792.00000 train_loss_parts= [188451799040.0, 581666.4375, 557086605312.0, 0.0259] link_pred_train_acc= 0.49560 time= 12.21310
+Epoch: 0005 LR=0.0020 train_loss_total= 8488350.00000 train_loss_parts= [7091955.0, 2549.8406, 1393844.875, 0.0357] link_pred_train_acc= 0.49518 time= 12.10859
+Epoch: 0006 LR=0.0020 train_loss_total= 843107.56250 train_loss_parts= [213215.9844, 803.0952, 629088.4375, 0.0453] link_pred_train_acc= 0.49397 time= 12.12359
+Epoch: 0007 LR=0.0020 train_loss_total= 490565.12500 train_loss_parts= [132288.0781, 1170.0046, 357106.9688, 0.0531] link_pred_train_acc= 0.49298 time= 12.21682
+Epoch: 0008 LR=0.0020 train_loss_total= 12566911.00000 train_loss_parts= [2862185.0, 10509.3711, 9694217.0, 0.0582] link_pred_train_acc= 0.49273 time= 12.14022
+Epoch: 0009 LR=0.0020 train_loss_total= 626347840.00000 train_loss_parts= [106244392.0, 21200.541, 520082240.0, 0.0611] link_pred_train_acc= 0.49256 time= 12.23352
+Epoch: 0010 LR=0.0020 train_loss_total= 37793304576.00000 train_loss_parts= [15915451392.0, 515975.8125, 21877338112.0, 0.0622] link_pred_train_acc= 0.49189 time= 12.20738
+Optimization Finished!
+total time spend: 121.70694732666016
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Counter({3: 29992, 0: 3, 4: 2, 1: 1, 5: 1, 2: 1})
+label distribution for entropy
+true labels: [0.16833333333333333, 0.16393333333333332, 0.16506666666666667, 0.17143333333333333, 0.1634, 0.16783333333333333]
+pred labels: [0.0001, 3.3333333333333335e-05, 3.3333333333333335e-05, 0.9997333333333334, 6.666666666666667e-05, 3.3333333333333335e-05]
+Homogeneity:[0.0002]	 mean:0.0002	 std:0.0
+
+Completeness:[0.1122]	 mean:0.1122	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1715]	 mean:0.1715	 std:0.0
+
+Accuracy:[0.1715]	 mean:0.1715	 std:0.0
+
+F1-score:[0.0504]	 mean:0.0504	 std:0.0
+
+precision_score:[0.499]	 mean:0.499	 std:0.0
+
+recall_score:[0.1715]	 mean:0.1715	 std:0.0
+
+entropy:[6.4519]	 mean:6.4519	 std:0.0
+
+True label distribution:[4 1 1 ... 3 3 4]
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Predicted label distribution:[3 3 3 ... 0 3 3]
+Counter({3: 29992, 0: 3, 4: 2, 1: 1, 5: 1, 2: 1})
+Using synthetic dataset
+dataset:synthetic_35000_0.1, node_num:35000,edge_num:61247986,attribute_num:1000
+imported graph edge number (without selfloop):30623993.0
+cluster number:6
+node size:35000, feature size:1000
+graph edge number after mask:30623993.0
+graph edge number after normalize adjacent matrix:30623993.0
+Epoch: 0001 LR=0.0020 train_loss_total= 4436085178368.00000 train_loss_parts= [84734427136.0, 293273.0312, 4351350276096.0, 0.0052] link_pred_train_acc= 0.49784 time= 17.05684
+Epoch: 0002 LR=0.0020 train_loss_total= 1005878253715456.00000 train_loss_parts= [13721346768896.0, 38568612.0, 992156839837696.0, 0.0227] link_pred_train_acc= 0.49746 time= 17.39914
+Epoch: 0003 LR=0.0020 train_loss_total= 7801986076628746240.00000 train_loss_parts= [6.403163589653299e+16, 394769216.0, 7.737954367717769e+18, 0.0228] link_pred_train_acc= 0.49676 time= 17.24511
+Epoch: 0004 LR=0.0020 train_loss_total= 38318603501568.00000 train_loss_parts= [77136068608.0, 1043073.3125, 38241466056704.0, 0.0207] link_pred_train_acc= 0.49643 time= 17.19730
+Epoch: 0005 LR=0.0020 train_loss_total= 14920892813939792936960.00000 train_loss_parts= [7.214597718061508e+20, 29317136384.0, 1.4199433042133642e+22, 0.0254] link_pred_train_acc= 0.49628 time= 17.21377
+Epoch: 0006 LR=0.0020 train_loss_total= 5708788783352698109952.00000 train_loss_parts= [2.0878138996285034e+20, 9058075648.0, 5.500007534127336e+21, 0.0246] link_pred_train_acc= 0.49651 time= 17.26575
+Epoch: 0007 LR=0.0020 train_loss_total= 720429362285157285888.00000 train_loss_parts= [5.107533326961345e+18, 14454241280.0, 7.153218580952541e+20, 0.0277] link_pred_train_acc= 0.49655 time= 17.25899
+Epoch: 0008 LR=0.0020 train_loss_total= 23307240777409626112.00000 train_loss_parts= [2.1112358420086784e+17, 1396705152.0, 2.309611695269059e+19, 0.03] link_pred_train_acc= 0.49629 time= 17.19837
+Epoch: 0009 LR=0.0020 train_loss_total= 26618925940736.00000 train_loss_parts= [743888060416.0, 4716498.5, 25875032571904.0, 0.0326] link_pred_train_acc= 0.49575 time= 17.18126
+Epoch: 0010 LR=0.0020 train_loss_total= 64310000.00000 train_loss_parts= [20646740.0, 16954.7578, 43646308.0, 0.0349] link_pred_train_acc= 0.49559 time= 17.07588
+Optimization Finished!
+total time spend: 172.09253358840942
+{0, 1, 2, 3, 4, 5}
+{0, 1, 2, 3, 4, 5}
+label mapping using Hungarian algorithm 
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Counter({1: 34995, 0: 1, 5: 1, 4: 1, 3: 1, 2: 1})
+label distribution for entropy
+true labels: [0.16651428571428573, 0.17054285714285713, 0.16645714285714286, 0.16537142857142856, 0.16682857142857144, 0.16428571428571428]
+pred labels: [2.857142857142857e-05, 0.9998571428571429, 2.857142857142857e-05, 2.857142857142857e-05, 2.857142857142857e-05, 2.857142857142857e-05]
+Homogeneity:[0.0001]	 mean:0.0001	 std:0.0
+
+Completeness:[0.1568]	 mean:0.1568	 std:0.0
+
+V_measure_score:[0.0003]	 mean:0.0003	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0003]	 mean:0.0003	 std:0.0
+
+Purity:[0.1707]	 mean:0.1707	 std:0.0
+
+Accuracy:[0.1707]	 mean:0.1707	 std:0.0
+
+F1-score:[0.0499]	 mean:0.0499	 std:0.0
+
+precision_score:[0.692]	 mean:0.692	 std:0.0
+
+recall_score:[0.1707]	 mean:0.1707	 std:0.0
+
+entropy:[6.887]	 mean:6.887	 std:0.0
+
+True label distribution:[2 1 4 ... 3 3 2]
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Predicted label distribution:[1 1 1 ... 3 1 2]
+Counter({1: 34995, 0: 1, 5: 1, 4: 1, 3: 1, 2: 1})

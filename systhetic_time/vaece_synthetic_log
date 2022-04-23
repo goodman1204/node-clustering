@@ -1,0 +1,308 @@
+Using synthetic dataset
+dataset:synthetic_5000_0.1, node_num:5000,edge_num:1249513,attribute_num:1000
+imported graph edge number (without selfloop):624756.5
+cluster number:6
+node size:5000, feature size:1000
+graph edge number after mask:624756.5
+graph edge number after normalize adjacent matrix:624756.5
+Epoch: 0001 LR=0.0020 train_loss_total= -41.02058 train_loss_parts= [2.4965, 2.7799, 0.0016, 0.0063, -0.0, -46.3049, -9.2099] mutual dist loss= -46.30485 soft clustering loss= -9.20994 link_pred_train_acc= 0.49625
+epoch time= 0.38030
+Epoch: 0002 LR=0.0020 train_loss_total= -41.11073 train_loss_parts= [2.6364, 2.5465, 0.0068, 0.0044, -0.0, -46.3049, -9.0789] mutual dist loss= -46.30485 soft clustering loss= -9.07890 link_pred_train_acc= 0.49603
+epoch time= 0.35302
+Epoch: 0003 LR=0.0020 train_loss_total= -51.00504 train_loss_parts= [2.4249, 2.2005, 0.0012, 0.0047, -0.0, -46.3049, -9.3315] mutual dist loss= -46.30485 soft clustering loss= -9.33149 link_pred_train_acc= 0.49608
+epoch time= 0.36161
+Optimization Finished!
+total time spend: 1.0949583053588867
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Counter({5: 990, 3: 933, 2: 851, 0: 761, 4: 742, 1: 723})
+label distribution for entropy
+true labels: [0.165, 0.1702, 0.1664, 0.1712, 0.1632, 0.164]
+pred labels: [0.1522, 0.1446, 0.1702, 0.1866, 0.1484, 0.198]
+Homogeneity:[0.0013]	 mean:0.0013	 std:0.0
+
+Completeness:[0.0013]	 mean:0.0013	 std:0.0
+
+V_measure_score:[0.0013]	 mean:0.0013	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0001]	 mean:-0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0013]	 mean:0.0013	 std:0.0
+
+Purity:[0.1834]	 mean:0.1834	 std:0.0
+
+Accuracy:[0.1814]	 mean:0.1814	 std:0.0
+
+F1-score:[0.171]	 mean:0.171	 std:0.0
+
+precision_score:[0.1714]	 mean:0.1714	 std:0.0
+
+recall_score:[0.1718]	 mean:0.1718	 std:0.0
+
+entropy:[0.0072]	 mean:0.0072	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_10000_0.1, node_num:10000,edge_num:4998996,attribute_num:1000
+imported graph edge number (without selfloop):2499498.0
+cluster number:6
+node size:10000, feature size:1000
+graph edge number after mask:2499498.0
+graph edge number after normalize adjacent matrix:2499498.0
+Epoch: 0001 LR=0.0020 train_loss_total= -44.91475 train_loss_parts= [2.7202, 2.9804, 0.0097, 0.0068, -0.0, -50.6319, -21.5413] mutual dist loss= -50.63188 soft clustering loss= -21.54132 link_pred_train_acc= 0.49736
+epoch time= 1.38206
+Epoch: 0002 LR=0.0020 train_loss_total= -45.43491 train_loss_parts= [2.7554, 2.4283, 0.0089, 0.0044, -0.0, -50.6319, -21.6748] mutual dist loss= -50.63188 soft clustering loss= -21.67477 link_pred_train_acc= 0.49496
+epoch time= 1.31390
+Epoch: 0003 LR=0.0020 train_loss_total= -67.37137 train_loss_parts= [2.6196, 2.1533, 0.0034, 0.0062, -0.0, -50.6319, -21.522] mutual dist loss= -50.63188 soft clustering loss= -21.52204 link_pred_train_acc= 0.49384
+epoch time= 1.33205
+Optimization Finished!
+total time spend: 4.028021335601807
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Counter({0: 1818, 3: 1788, 5: 1733, 1: 1706, 2: 1591, 4: 1364})
+label distribution for entropy
+true labels: [0.1679, 0.1673, 0.1665, 0.1667, 0.1676, 0.164]
+pred labels: [0.1818, 0.1706, 0.1591, 0.1788, 0.1364, 0.1733]
+Homogeneity:[0.0007]	 mean:0.0007	 std:0.0
+
+Completeness:[0.0007]	 mean:0.0007	 std:0.0
+
+V_measure_score:[0.0007]	 mean:0.0007	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0007]	 mean:0.0007	 std:0.0
+
+Purity:[0.1776]	 mean:0.1776	 std:0.0
+
+Accuracy:[0.177]	 mean:0.177	 std:0.0
+
+F1-score:[0.1695]	 mean:0.1695	 std:0.0
+
+precision_score:[0.17]	 mean:0.17	 std:0.0
+
+recall_score:[0.1699]	 mean:0.1699	 std:0.0
+
+entropy:[0.0047]	 mean:0.0047	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_15000_0.1, node_num:15000,edge_num:11247772,attribute_num:1000
+imported graph edge number (without selfloop):5623886.0
+cluster number:6
+node size:15000, feature size:1000
+graph edge number after mask:5623886.0
+graph edge number after normalize adjacent matrix:5623886.0
+Epoch: 0001 LR=0.0020 train_loss_total= -34.36572 train_loss_parts= [11.3313, 5.1855, 1.6109, 0.0068, -0.0, -52.5001, -34.1044] mutual dist loss= -52.50014 soft clustering loss= -34.10438 link_pred_train_acc= 0.49707
+epoch time= 2.96869
+Epoch: 0002 LR=0.0020 train_loss_total= 22.57385 train_loss_parts= [37.6078, 8.5833, 28.8755, 0.0074, -0.0, -52.5001, -34.0576] mutual dist loss= -52.50014 soft clustering loss= -34.05762 link_pred_train_acc= 0.49632
+epoch time= 2.97706
+Epoch: 0003 LR=0.0020 train_loss_total= 29398.69922 train_loss_parts= [21134.4102, 86.5994, 8263.9277, 0.0096, -0.0, -52.5001, -33.7473] mutual dist loss= -52.50014 soft clustering loss= -33.74735 link_pred_train_acc= 0.49622
+epoch time= 2.91496
+Optimization Finished!
+total time spend: 8.86071515083313
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Counter({0: 2961, 3: 2496, 1: 2487, 2: 2412, 5: 2362, 4: 2282})
+label distribution for entropy
+true labels: [0.167, 0.16546666666666668, 0.1636, 0.16486666666666666, 0.16726666666666667, 0.1718]
+pred labels: [0.1974, 0.1658, 0.1608, 0.1664, 0.15213333333333334, 0.15746666666666667]
+Homogeneity:[0.0007]	 mean:0.0007	 std:0.0
+
+Completeness:[0.0007]	 mean:0.0007	 std:0.0
+
+V_measure_score:[0.0007]	 mean:0.0007	 std:0.0
+
+adjusted Rand Score:[0.0002]	 mean:0.0002	 std:0.0
+
+adjusted Mutual Information:[0.0002]	 mean:0.0002	 std:0.0
+
+Normalized Mutual Information:[0.0007]	 mean:0.0007	 std:0.0
+
+Purity:[0.1791]	 mean:0.1791	 std:0.0
+
+Accuracy:[0.1791]	 mean:0.1791	 std:0.0
+
+F1-score:[0.1643]	 mean:0.1643	 std:0.0
+
+precision_score:[0.1645]	 mean:0.1645	 std:0.0
+
+recall_score:[0.1648]	 mean:0.1648	 std:0.0
+
+entropy:[0.0039]	 mean:0.0039	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_20000_0.1, node_num:20000,edge_num:20004791,attribute_num:1000
+imported graph edge number (without selfloop):10002395.5
+cluster number:6
+node size:20000, feature size:1000
+graph edge number after mask:10002395.5
+graph edge number after normalize adjacent matrix:10002395.5
+Epoch: 0001 LR=0.0020 train_loss_total= -0.15456 train_loss_parts= [19.4088, 5.3506, 28.1813, 0.0062, -0.0, -53.1015, -47.0502] mutual dist loss= -53.10147 soft clustering loss= -47.05015 link_pred_train_acc= 0.49777
+epoch time= 5.25045
+Epoch: 0002 LR=0.0020 train_loss_total= 11097.22266 train_loss_parts= [1154.787, 59.4441, 9936.082, 0.0111, -0.0, -53.1015, -46.9115] mutual dist loss= -53.10147 soft clustering loss= -46.91145 link_pred_train_acc= 0.49743
+epoch time= 5.23498
+Epoch: 0003 LR=0.0020 train_loss_total= -71.45297 train_loss_parts= [10.1462, 3.9037, 14.6514, 0.0146, -0.0, -53.1015, -47.0673] mutual dist loss= -53.10147 soft clustering loss= -47.06730 link_pred_train_acc= 0.49692
+epoch time= 5.18406
+Optimization Finished!
+total time spend: 15.669508218765259
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Counter({4: 4689, 3: 3504, 2: 3270, 0: 2968, 5: 2908, 1: 2661})
+label distribution for entropy
+true labels: [0.1714, 0.1641, 0.1644, 0.169, 0.16545, 0.16565]
+pred labels: [0.1484, 0.13305, 0.1635, 0.1752, 0.23445, 0.1454]
+Homogeneity:[0.0005]	 mean:0.0005	 std:0.0
+
+Completeness:[0.0005]	 mean:0.0005	 std:0.0
+
+V_measure_score:[0.0005]	 mean:0.0005	 std:0.0
+
+adjusted Rand Score:[0.0001]	 mean:0.0001	 std:0.0
+
+adjusted Mutual Information:[0.0001]	 mean:0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0005]	 mean:0.0005	 std:0.0
+
+Purity:[0.1785]	 mean:0.1785	 std:0.0
+
+Accuracy:[0.1758]	 mean:0.1758	 std:0.0
+
+F1-score:[0.1652]	 mean:0.1652	 std:0.0
+
+precision_score:[0.1665]	 mean:0.1665	 std:0.0
+
+recall_score:[0.1669]	 mean:0.1669	 std:0.0
+
+entropy:[0.0179]	 mean:0.0179	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_25000_0.1, node_num:25000,edge_num:31247935,attribute_num:1000
+imported graph edge number (without selfloop):15623967.5
+cluster number:6
+node size:25000, feature size:1000
+graph edge number after mask:15623967.5
+graph edge number after normalize adjacent matrix:15623967.5
+Epoch: 0001 LR=0.0020 train_loss_total= 525.32959 train_loss_parts= [224.1403, 21.7044, 331.1679, 0.0054, -0.0, -51.6884, -55.9925] mutual dist loss= -51.68844 soft clustering loss= -55.99246 link_pred_train_acc= 0.49734
+epoch time= 8.18960
+Epoch: 0002 LR=0.0020 train_loss_total= 10054.40820 train_loss_parts= [5897.1436, 97.5098, 4111.4243, 0.0184, -0.0, -51.6884, -54.986] mutual dist loss= -51.68844 soft clustering loss= -54.98596 link_pred_train_acc= 0.49733
+epoch time= 8.25338
+Epoch: 0003 LR=0.0020 train_loss_total= 15656.63086 train_loss_parts= [10862.8418, 70.5982, 4828.8174, 0.0226, -0.0, -51.6884, -53.9605] mutual dist loss= -51.68844 soft clustering loss= -53.96047 link_pred_train_acc= 0.49706
+epoch time= 8.22333
+Optimization Finished!
+total time spend: 24.666324615478516
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Counter({3: 4729, 2: 4729, 5: 4323, 4: 4278, 0: 3729, 1: 3212})
+label distribution for entropy
+true labels: [0.16432, 0.16564, 0.16756, 0.1652, 0.16964, 0.16764]
+pred labels: [0.14916, 0.12848, 0.18916, 0.18916, 0.17112, 0.17292]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.0003]	 mean:0.0003	 std:0.0
+
+V_measure_score:[0.0003]	 mean:0.0003	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0003]	 mean:0.0003	 std:0.0
+
+Purity:[0.1747]	 mean:0.1747	 std:0.0
+
+Accuracy:[0.173]	 mean:0.173	 std:0.0
+
+F1-score:[0.1654]	 mean:0.1654	 std:0.0
+
+precision_score:[0.166]	 mean:0.166	 std:0.0
+
+recall_score:[0.1662]	 mean:0.1662	 std:0.0
+
+entropy:[0.0086]	 mean:0.0086	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_30000_0.1, node_num:30000,edge_num:44999484,attribute_num:1000
+imported graph edge number (without selfloop):22499742.0
+cluster number:6
+node size:30000, feature size:1000
+graph edge number after mask:22499742.0
+graph edge number after normalize adjacent matrix:22499742.0
+Epoch: 0001 LR=0.0020 train_loss_total= 13047.71387 train_loss_parts= [11006.9229, 71.2183, 2022.7104, 0.0053, -0.0, -53.1427, -71.3028] mutual dist loss= -53.14270 soft clustering loss= -71.30280 link_pred_train_acc= 0.49728
+epoch time= 12.08327
+Epoch: 0002 LR=0.0020 train_loss_total= 3247976.00000 train_loss_parts= [349429.5, 1298.1437, 2897301.5, 0.0224, -0.0, -53.1427, -71.2381] mutual dist loss= -53.14270 soft clustering loss= -71.23808 link_pred_train_acc= 0.49708
+epoch time= 12.24091
+Epoch: 0003 LR=0.0020 train_loss_total= 3210426368.00000 train_loss_parts= [619968832.0, 11307.7109, 2590446336.0, 0.029, -0.0, -53.1427, -70.9758] mutual dist loss= -53.14270 soft clustering loss= -70.97579 link_pred_train_acc= 0.49657
+epoch time= 12.21396
+Optimization Finished!
+total time spend: 36.53814363479614
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Counter({3: 5402, 5: 5331, 1: 5282, 4: 4986, 0: 4513, 2: 4486})
+label distribution for entropy
+true labels: [0.16833333333333333, 0.16393333333333332, 0.16506666666666667, 0.17143333333333333, 0.1634, 0.16783333333333333]
+pred labels: [0.15043333333333334, 0.17606666666666668, 0.14953333333333332, 0.18006666666666668, 0.1662, 0.1777]
+Homogeneity:[0.0002]	 mean:0.0002	 std:0.0
+
+Completeness:[0.0002]	 mean:0.0002	 std:0.0
+
+V_measure_score:[0.0002]	 mean:0.0002	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0002]	 mean:0.0002	 std:0.0
+
+Purity:[0.1746]	 mean:0.1746	 std:0.0
+
+Accuracy:[0.1737]	 mean:0.1737	 std:0.0
+
+F1-score:[0.1653]	 mean:0.1653	 std:0.0
+
+precision_score:[0.1655]	 mean:0.1655	 std:0.0
+
+recall_score:[0.1655]	 mean:0.1655	 std:0.0
+
+entropy:[0.0027]	 mean:0.0027	 std:0.0
+
+Using synthetic dataset
+dataset:synthetic_35000_0.1, node_num:35000,edge_num:61247986,attribute_num:1000
+imported graph edge number (without selfloop):30623993.0
+cluster number:6
+node size:35000, feature size:1000
+graph edge number after mask:30623993.0
+graph edge number after normalize adjacent matrix:30623993.0
+Epoch: 0001 LR=0.0020 train_loss_total= 583330.68750 train_loss_parts= [73043.6484, 186.6209, 510157.3125, 0.0066, -0.0, -56.8868, -93.891] mutual dist loss= -56.88676 soft clustering loss= -93.89099 link_pred_train_acc= 0.49712
+epoch time= 16.95432
+Epoch: 0002 LR=0.0020 train_loss_total= 4913732608.00000 train_loss_parts= [311493312.0, 24853.3125, 4602214400.0, 0.0194, -0.0, -56.8868, -92.0495] mutual dist loss= -56.88676 soft clustering loss= -92.04945 link_pred_train_acc= 0.49734
+epoch time= 17.26508
+Epoch: 0003 LR=0.0020 train_loss_total= 5397167573303296.00000 train_loss_parts= [6070053896192.0, 767385.4375, 5391097710772224.0, 0.0237, -0.0, -56.8868, -91.7794] mutual dist loss= -56.88676 soft clustering loss= -91.77939 link_pred_train_acc= 0.49682
+epoch time= 17.12000
+Optimization Finished!
+total time spend: 51.33940935134888
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Counter({5: 7308, 4: 6307, 3: 5801, 0: 5677, 1: 5359, 2: 4548})
+label distribution for entropy
+true labels: [0.16651428571428573, 0.17054285714285713, 0.16645714285714286, 0.16537142857142856, 0.16682857142857144, 0.16428571428571428]
+pred labels: [0.1622, 0.1531142857142857, 0.12994285714285714, 0.16574285714285714, 0.1802, 0.2088]
+Homogeneity:[0.0001]	 mean:0.0001	 std:0.0
+
+Completeness:[0.0001]	 mean:0.0001	 std:0.0
+
+V_measure_score:[0.0001]	 mean:0.0001	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0001]	 mean:-0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0001]	 mean:0.0001	 std:0.0
+
+Purity:[0.173]	 mean:0.173	 std:0.0
+
+Accuracy:[0.1721]	 mean:0.1721	 std:0.0
+
+F1-score:[0.1653]	 mean:0.1653	 std:0.0
+
+precision_score:[0.1664]	 mean:0.1664	 std:0.0
+
+recall_score:[0.1662]	 mean:0.1662	 std:0.0
+
+entropy:[0.0114]	 mean:0.0114	 std:0.0
+

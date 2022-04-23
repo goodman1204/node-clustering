@@ -1,0 +1,581 @@
+Using synthetic dataset
+dataset:synthetic_5000_0.1, node_num:5000,edge_num:1249513,attribute_num:1000
+imported graph edge number (without selfloop):624756.5
+cluster number:6
+node size:5000, feature size:1000
+graph edge number after mask:624756.5
+graph edge number after normalize adjacent matrix:624756.5
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 4901, 2: 99})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.72592 train_loss_parts= [0.7259, -0.0, 0.0007] link_pred_train_acc= 0.05018 time= 0.40710
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 4881, 1: 95, 5: 24})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.72558 train_loss_parts= [0.7256, 0.0, 0.0005] link_pred_train_acc= 0.05018 time= 0.40536
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 4917, 1: 83})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.72512 train_loss_parts= [0.7251, -0.0, 0.0003] link_pred_train_acc= 0.05018 time= 0.40341
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 4999, 1: 1})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.72488 train_loss_parts= [0.7249, 0.0, 0.0001] link_pred_train_acc= 0.05018 time= 0.40633
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 5000})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.72477 train_loss_parts= [0.7248, 0.0, 0.0001] link_pred_train_acc= 0.05018 time= 0.38240
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 4999, 3: 1})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.72473 train_loss_parts= [0.7247, -0.0, 0.0] link_pred_train_acc= 0.05018 time= 0.40576
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 5000})
+pre_train True
+kmeans purity, NMI: 0.1756 0.0021688082601084638
+Epoch: 0007 LR=0.0020 train_loss_total= 0.72472 train_loss_parts= [0.7247, -0.0, 0.0] link_pred_train_acc= 0.05018 time= 0.72366
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 4697, 5: 238, 3: 48, 1: 11, 2: 4, 4: 2})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.72471 train_loss_parts= [0.7247, 0.0, 0.0001] link_pred_train_acc= 0.05018 time= 0.40984
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 4592, 5: 323, 3: 54, 1: 23, 2: 6, 4: 2})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.72470 train_loss_parts= [0.7247, 0.0, 0.0002] link_pred_train_acc= 0.05018 time= 0.40820
+z shape mu_c shape torch.Size([5000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 4243, 5: 542, 3: 136, 1: 53, 2: 24, 4: 2})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.72468 train_loss_parts= [0.7247, -0.0, 0.0006] link_pred_train_acc= 0.05018 time= 0.40755
+Optimization Finished!
+total time spend: 4.359730243682861
+gamma_c: [[0.19514632 0.17604893 0.11882138 0.19018193 0.125083   0.19471839]
+ [0.19514635 0.17604893 0.1188214  0.19018196 0.125083   0.19471842]
+ [0.19514632 0.17604893 0.1188214  0.19018193 0.125083   0.19471839]
+ ...
+ [0.12378859 0.16695707 0.25550258 0.14286451 0.1820879  0.12879935]
+ [0.12265251 0.1633008  0.2582114  0.14068562 0.18780082 0.12734881]
+ [0.12124826 0.16151665 0.2532327  0.13878088 0.19945715 0.12576436]]
+gamma_c argmax: [0 0 0 ... 2 2 2]
+gamma_c argmax counter: Counter({0: 4243, 5: 542, 3: 136, 1: 53, 2: 24, 4: 2})
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Counter({0: 4243, 5: 542, 3: 136, 1: 53, 2: 24, 4: 2})
+label distribution for entropy
+true labels: [0.165, 0.1702, 0.1664, 0.1712, 0.1632, 0.164]
+pred labels: [0.8486, 0.0106, 0.0048, 0.0272, 0.0004, 0.1084]
+Homogeneity:[0.0017]	 mean:0.0017	 std:0.0
+
+Completeness:[0.0054]	 mean:0.0054	 std:0.0
+
+V_measure_score:[0.0025]	 mean:0.0025	 std:0.0
+
+adjusted Rand Score:[0.0001]	 mean:0.0001	 std:0.0
+
+adjusted Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Normalized Mutual Information:[0.0025]	 mean:0.0025	 std:0.0
+
+Purity:[0.1788]	 mean:0.1788	 std:0.0
+
+Accuracy:[0.1782]	 mean:0.1782	 std:0.0
+
+F1-score:[0.0737]	 mean:0.0737	 std:0.0
+
+precision_score:[0.0966]	 mean:0.0966	 std:0.0
+
+recall_score:[0.16]	 mean:0.16	 std:0.0
+
+entropy:[2.1562]	 mean:2.1562	 std:0.0
+
+True label distribution:[2 0 5 ... 3 2 3]
+Counter({3: 856, 1: 851, 2: 832, 0: 825, 5: 820, 4: 816})
+Predicted label distribution:[0 0 0 ... 2 2 2]
+Counter({0: 4243, 5: 542, 3: 136, 1: 53, 2: 24, 4: 2})
+Using synthetic dataset
+dataset:synthetic_10000_0.1, node_num:10000,edge_num:4998996,attribute_num:1000
+imported graph edge number (without selfloop):2499498.0
+cluster number:6
+node size:10000, feature size:1000
+graph edge number after mask:2499498.0
+graph edge number after normalize adjacent matrix:2499498.0
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9905, 5: 95})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.72500 train_loss_parts= [0.725, -0.0001, 0.0003] link_pred_train_acc= 0.05009 time= 1.64506
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9393, 1: 606, 2: 1})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.72465 train_loss_parts= [0.7246, -0.0001, 0.0002] link_pred_train_acc= 0.05009 time= 1.65539
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 8790, 1: 943, 0: 240, 2: 27})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.72428 train_loss_parts= [0.7243, -0.0001, 0.0003] link_pred_train_acc= 0.05009 time= 1.66440
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9932, 2: 68})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.72394 train_loss_parts= [0.7239, -0.0, 0.0002] link_pred_train_acc= 0.05009 time= 1.65688
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9989, 5: 10, 3: 1})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.72376 train_loss_parts= [0.7238, 0.0, 0.0001] link_pred_train_acc= 0.05009 time= 1.65043
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9985, 5: 15})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.72372 train_loss_parts= [0.7237, 0.0, 0.0001] link_pred_train_acc= 0.05009 time= 1.65817
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({4: 9982, 3: 16, 5: 2})
+pre_train True
+kmeans purity, NMI: 0.1711 0.0017670389788691401
+Epoch: 0007 LR=0.0020 train_loss_total= 0.72368 train_loss_parts= [0.7237, 0.0, 0.0001] link_pred_train_acc= 0.05009 time= 2.17127
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 9744, 4: 190, 3: 49, 1: 10, 5: 7})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.72363 train_loss_parts= [0.7237, 0.0, 0.0004] link_pred_train_acc= 0.05009 time= 1.66624
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 9628, 4: 276, 3: 65, 1: 17, 5: 13, 2: 1})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.72360 train_loss_parts= [0.7237, 0.0, 0.0007] link_pred_train_acc= 0.05009 time= 1.65674
+z shape mu_c shape torch.Size([10000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 9097, 4: 643, 3: 154, 1: 57, 5: 34, 2: 15})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.72345 train_loss_parts= [0.7237, 0.0, 0.0026] link_pred_train_acc= 0.05009 time= 1.66283
+Optimization Finished!
+total time spend: 17.087547302246094
+gamma_c: [[0.24984884 0.15477826 0.03236939 0.22041552 0.2464295  0.09615841]
+ [0.24984884 0.15477826 0.0323694  0.22041552 0.2464295  0.09615841]
+ [0.24984884 0.15477827 0.0323694  0.22041552 0.2464295  0.09615841]
+ ...
+ [0.0811688  0.12114443 0.45353457 0.09679978 0.08560111 0.1617513 ]
+ [0.07453893 0.11509763 0.48329136 0.0901824  0.0789435  0.15794612]
+ [0.08255166 0.122875   0.44554672 0.09836324 0.08703845 0.1636249 ]]
+gamma_c argmax: [0 0 0 ... 2 2 2]
+gamma_c argmax counter: Counter({0: 9097, 4: 643, 3: 154, 1: 57, 5: 34, 2: 15})
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Counter({0: 9097, 4: 643, 3: 154, 1: 57, 5: 34, 2: 15})
+label distribution for entropy
+true labels: [0.1679, 0.1673, 0.1665, 0.1667, 0.1676, 0.164]
+pred labels: [0.9097, 0.0057, 0.0015, 0.0154, 0.0643, 0.0034]
+Homogeneity:[0.001]	 mean:0.001	 std:0.0
+
+Completeness:[0.0045]	 mean:0.0045	 std:0.0
+
+V_measure_score:[0.0016]	 mean:0.0016	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Normalized Mutual Information:[0.0016]	 mean:0.0016	 std:0.0
+
+Purity:[0.1716]	 mean:0.1716	 std:0.0
+
+Accuracy:[0.1709]	 mean:0.1709	 std:0.0
+
+F1-score:[0.0683]	 mean:0.0683	 std:0.0
+
+precision_score:[0.129]	 mean:0.129	 std:0.0
+
+recall_score:[0.1649]	 mean:0.1649	 std:0.0
+
+entropy:[2.2591]	 mean:2.2591	 std:0.0
+
+True label distribution:[1 3 4 ... 3 3 3]
+Counter({0: 1679, 4: 1676, 1: 1673, 3: 1667, 2: 1665, 5: 1640})
+Predicted label distribution:[0 0 0 ... 2 2 2]
+Counter({0: 9097, 4: 643, 3: 154, 1: 57, 5: 34, 2: 15})
+Using synthetic dataset
+dataset:synthetic_15000_0.1, node_num:15000,edge_num:11247772,attribute_num:1000
+imported graph edge number (without selfloop):5623886.0
+cluster number:6
+node size:15000, feature size:1000
+graph edge number after mask:5623886.0
+graph edge number after normalize adjacent matrix:5623886.0
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 14168, 2: 832})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.72504 train_loss_parts= [0.7247, -0.0036, 0.0009] link_pred_train_acc= 0.05006 time= 3.90057
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 12730, 4: 2270})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.72471 train_loss_parts= [0.7245, -0.0022, 0.0007] link_pred_train_acc= 0.05006 time= 3.81748
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 13227, 4: 1282, 5: 491})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.72435 train_loss_parts= [0.724, -0.0033, 0.0004] link_pred_train_acc= 0.05006 time= 3.81439
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 13540, 5: 832, 4: 628})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.72401 train_loss_parts= [0.7237, -0.0031, 0.0003] link_pred_train_acc= 0.05006 time= 3.81598
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 14309, 0: 422, 4: 269})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.72390 train_loss_parts= [0.7235, -0.0036, 0.0001] link_pred_train_acc= 0.05006 time= 3.88422
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 14609, 4: 216, 0: 175})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.72388 train_loss_parts= [0.7235, -0.0038, 0.0001] link_pred_train_acc= 0.05006 time= 3.81468
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 14525, 4: 475})
+pre_train True
+kmeans purity, NMI: 0.17226666666666668 0.0007660988334291967
+Epoch: 0007 LR=0.0020 train_loss_total= 0.72384 train_loss_parts= [0.7235, -0.0031, 0.0001] link_pred_train_acc= 0.05006 time= 4.51284
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 13956, 2: 794, 5: 165, 4: 52, 1: 24, 3: 9})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.72331 train_loss_parts= [0.7235, -0.0028, 0.0052] link_pred_train_acc= 0.05006 time= 3.83593
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 13635, 2: 1004, 5: 224, 4: 86, 1: 34, 3: 17})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.72310 train_loss_parts= [0.7237, -0.0022, 0.008] link_pred_train_acc= 0.05006 time= 3.82425
+z shape mu_c shape torch.Size([15000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 13194, 2: 1274, 5: 334, 4: 116, 1: 50, 3: 32})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.72292 train_loss_parts= [0.724, -0.0018, 0.0121] link_pred_train_acc= 0.05006 time= 3.89432
+Optimization Finished!
+total time spend: 39.11479210853577
+gamma_c: [[0.4009396  0.01653275 0.35272345 0.0042592  0.05591595 0.16962902]
+ [0.4009396  0.01653275 0.35272342 0.0042592  0.05591594 0.16962902]
+ [0.4009396  0.01653275 0.35272342 0.0042592  0.05591595 0.16962901]
+ ...
+ [0.12383032 0.18328917 0.12718856 0.2799523  0.15041125 0.13532847]
+ [0.11791711 0.18452227 0.12155709 0.29842192 0.14714243 0.13043918]
+ [0.12390729 0.18306158 0.12724689 0.28009146 0.15034878 0.135344  ]]
+gamma_c argmax: [0 0 0 ... 3 3 3]
+gamma_c argmax counter: Counter({0: 13194, 2: 1274, 5: 334, 4: 116, 1: 50, 3: 32})
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Counter({0: 13194, 2: 1274, 5: 334, 4: 116, 1: 50, 3: 32})
+label distribution for entropy
+true labels: [0.167, 0.16546666666666668, 0.1636, 0.16486666666666666, 0.16726666666666667, 0.1718]
+pred labels: [0.8796, 0.0033333333333333335, 0.08493333333333333, 0.0021333333333333334, 0.007733333333333333, 0.022266666666666667]
+Homogeneity:[0.0004]	 mean:0.0004	 std:0.0
+
+Completeness:[0.0017]	 mean:0.0017	 std:0.0
+
+V_measure_score:[0.0007]	 mean:0.0007	 std:0.0
+
+adjusted Rand Score:[0.0001]	 mean:0.0001	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0007]	 mean:0.0007	 std:0.0
+
+Purity:[0.1747]	 mean:0.1747	 std:0.0
+
+Accuracy:[0.1739]	 mean:0.1739	 std:0.0
+
+F1-score:[0.078]	 mean:0.078	 std:0.0
+
+precision_score:[0.1697]	 mean:0.1697	 std:0.0
+
+recall_score:[0.1679]	 mean:0.1679	 std:0.0
+
+entropy:[2.0579]	 mean:2.0579	 std:0.0
+
+True label distribution:[2 0 3 ... 5 4 5]
+Counter({5: 2577, 4: 2509, 0: 2505, 1: 2482, 3: 2473, 2: 2454})
+Predicted label distribution:[0 0 0 ... 3 3 3]
+Counter({0: 13194, 2: 1274, 5: 334, 4: 116, 1: 50, 3: 32})
+Using synthetic dataset
+dataset:synthetic_20000_0.1, node_num:20000,edge_num:20004791,attribute_num:1000
+imported graph edge number (without selfloop):10002395.5
+cluster number:6
+node size:20000, feature size:1000
+graph edge number after mask:10002395.5
+graph edge number after normalize adjacent matrix:10002395.5
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 18272, 5: 1728})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.72927 train_loss_parts= [0.7293, -0.0, 0.0005] link_pred_train_acc= 0.05006 time= 6.81495
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 19558, 4: 290, 0: 152})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.72901 train_loss_parts= [0.729, -0.0, 0.0002] link_pred_train_acc= 0.05006 time= 6.76162
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 18813, 4: 1187})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.72881 train_loss_parts= [0.7288, -0.0, 0.0002] link_pred_train_acc= 0.05006 time= 6.79531
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 19726, 4: 274})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.72865 train_loss_parts= [0.7286, -0.0, 0.0001] link_pred_train_acc= 0.05006 time= 6.78212
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 19942, 5: 58})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.72862 train_loss_parts= [0.7286, -0.0, 0.0001] link_pred_train_acc= 0.05006 time= 6.76980
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 19919, 5: 81})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.72861 train_loss_parts= [0.7286, 0.0, 0.0001] link_pred_train_acc= 0.05006 time= 6.79797
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 20000})
+pre_train True
+kmeans purity, NMI: 0.17155 0.0005324465275943962
+Epoch: 0007 LR=0.0020 train_loss_total= 0.72861 train_loss_parts= [0.7286, 0.0, 0.0] link_pred_train_acc= 0.05006 time= 7.63184
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 19919, 2: 75, 5: 6})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.72861 train_loss_parts= [0.7286, 0.0, 0.0] link_pred_train_acc= 0.05006 time= 6.77963
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 19991, 2: 9})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.72861 train_loss_parts= [0.7286, 0.0, 0.0] link_pred_train_acc= 0.05006 time= 6.78016
+z shape mu_c shape torch.Size([20000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 19997, 2: 3})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.72861 train_loss_parts= [0.7286, 0.0, 0.0] link_pred_train_acc= 0.05006 time= 6.76557
+Optimization Finished!
+total time spend: 68.67908835411072
+gamma_c: [[0.2453341  0.0863187  0.24314824 0.15965405 0.04371457 0.22183031]
+ [0.2453341  0.0863187  0.24314824 0.15965405 0.04371457 0.22183031]
+ [0.2453341  0.0863187  0.24314824 0.15965405 0.04371457 0.22183031]
+ ...
+ [0.2414797  0.08835533 0.24085464 0.16232575 0.04425681 0.22272786]
+ [0.23977093 0.08929686 0.23974808 0.16357887 0.04463021 0.2229751 ]
+ [0.24334699 0.08727606 0.24200766 0.16105145 0.04395149 0.2223664 ]]
+gamma_c argmax: [0 0 0 ... 0 0 0]
+gamma_c argmax counter: Counter({0: 19997, 2: 3})
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Counter({0: 19997, 2: 3})
+label distribution for entropy
+true labels: [0.1714, 0.1641, 0.1644, 0.169, 0.16545, 0.16565]
+pred labels: [0.99985, 0.0, 0.00015, 0.0, 0.0, 0.0]
+Homogeneity:[0.0001]	 mean:0.0001	 std:0.0
+
+Completeness:[0.0705]	 mean:0.0705	 std:0.0
+
+V_measure_score:[0.0001]	 mean:0.0001	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0001]	 mean:0.0001	 std:0.0
+
+Purity:[0.1714]	 mean:0.1714	 std:0.0
+
+Accuracy:[0.1714]	 mean:0.1714	 std:0.0
+
+F1-score:[0.0503]	 mean:0.0503	 std:0.0
+
+precision_score:[0.0842]	 mean:0.0842	 std:0.0
+
+recall_score:[0.1714]	 mean:0.1714	 std:0.0
+
+entropy:[inf]	 mean:inf	 std:nan
+
+True label distribution:[5 3 5 ... 1 2 5]
+Counter({0: 3428, 3: 3380, 5: 3313, 4: 3309, 2: 3288, 1: 3282})
+Predicted label distribution:[0 0 0 ... 0 0 0]
+Counter({0: 19997, 2: 3})
+Using synthetic dataset
+dataset:synthetic_25000_0.1, node_num:25000,edge_num:31247935,attribute_num:1000
+imported graph edge number (without selfloop):15623967.5
+cluster number:6
+node size:25000, feature size:1000
+graph edge number after mask:15623967.5
+graph edge number after normalize adjacent matrix:15623967.5
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24882, 0: 118})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.73175 train_loss_parts= [0.7318, 0.0, 0.0006] link_pred_train_acc= 0.05004 time= 10.77194
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 23952, 5: 1046, 1: 2})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.73186 train_loss_parts= [0.7319, -0.0, 0.0003] link_pred_train_acc= 0.05004 time= 10.87744
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24244, 5: 448, 4: 308})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.73166 train_loss_parts= [0.7317, 0.0, 0.0003] link_pred_train_acc= 0.05004 time= 10.88585
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24765, 5: 235})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.73157 train_loss_parts= [0.7316, 0.0, 0.0001] link_pred_train_acc= 0.05004 time= 10.90560
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24988, 5: 12})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.73155 train_loss_parts= [0.7315, 0.0, 0.0] link_pred_train_acc= 0.05004 time= 10.89314
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24999, 1: 1})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.73156 train_loss_parts= [0.7316, -0.0, 0.0] link_pred_train_acc= 0.05004 time= 10.86631
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({3: 24987, 2: 7, 1: 6})
+pre_train True
+kmeans purity, NMI: 0.17152 0.0005278165980174399
+Epoch: 0007 LR=0.0020 train_loss_total= 0.73156 train_loss_parts= [0.7316, -0.0, 0.0] link_pred_train_acc= 0.05004 time= 11.86124
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 24101, 4: 698, 5: 143, 2: 41, 1: 17})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.73156 train_loss_parts= [0.7316, -0.0, 0.0] link_pred_train_acc= 0.05004 time= 10.86045
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 23977, 4: 786, 5: 167, 2: 50, 1: 18, 3: 2})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.73156 train_loss_parts= [0.7316, -0.0, 0.0] link_pred_train_acc= 0.05004 time= 10.84651
+z shape mu_c shape torch.Size([25000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 22628, 4: 1725, 5: 418, 2: 139, 1: 56, 3: 34})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.73155 train_loss_parts= [0.7316, -0.0, 0.0001] link_pred_train_acc= 0.05004 time= 10.86273
+Optimization Finished!
+total time spend: 109.63134431838989
+gamma_c: [[0.18228172 0.15907852 0.17551166 0.12005889 0.18215032 0.18091893]
+ [0.1822817  0.15907851 0.17551164 0.12005889 0.1821503  0.18091892]
+ [0.18228172 0.15907851 0.17551166 0.12005889 0.18215032 0.18091893]
+ ...
+ [0.13232094 0.18981355 0.16023004 0.2379838  0.13567047 0.14398113]
+ [0.12838851 0.18691403 0.15533799 0.2584026  0.13153239 0.13942443]
+ [0.12886755 0.18798536 0.15639137 0.2544782  0.13209556 0.14018193]]
+gamma_c argmax: [0 0 0 ... 3 3 3]
+gamma_c argmax counter: Counter({0: 22628, 4: 1725, 5: 418, 2: 139, 1: 56, 3: 34})
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Counter({0: 22628, 4: 1725, 5: 418, 2: 139, 1: 56, 3: 34})
+label distribution for entropy
+true labels: [0.16432, 0.16564, 0.16756, 0.1652, 0.16964, 0.16764]
+pred labels: [0.90512, 0.00224, 0.00556, 0.00136, 0.069, 0.01672]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.0012]	 mean:0.0012	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0]	 mean:0.0	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1716]	 mean:0.1716	 std:0.0
+
+Accuracy:[0.1714]	 mean:0.1714	 std:0.0
+
+F1-score:[0.0698]	 mean:0.0698	 std:0.0
+
+precision_score:[0.1394]	 mean:0.1394	 std:0.0
+
+recall_score:[0.165]	 mean:0.165	 std:0.0
+
+entropy:[2.3351]	 mean:2.3351	 std:0.0
+
+True label distribution:[2 0 3 ... 0 2 4]
+Counter({4: 4241, 5: 4191, 2: 4189, 1: 4141, 3: 4130, 0: 4108})
+Predicted label distribution:[0 0 0 ... 3 3 3]
+Counter({0: 22628, 4: 1725, 5: 418, 2: 139, 1: 56, 3: 34})
+Using synthetic dataset
+dataset:synthetic_30000_0.1, node_num:30000,edge_num:44999484,attribute_num:1000
+imported graph edge number (without selfloop):22499742.0
+cluster number:6
+node size:30000, feature size:1000
+graph edge number after mask:22499742.0
+graph edge number after normalize adjacent matrix:22499742.0
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 25282, 2: 3223, 0: 1495})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.73333 train_loss_parts= [0.7333, -0.0, 0.0004] link_pred_train_acc= 0.05003 time= 15.90115
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 29951, 3: 49})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.73328 train_loss_parts= [0.7333, 0.0, 0.0005] link_pred_train_acc= 0.05003 time= 15.93800
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 30000})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, -0.0, 0.0002] link_pred_train_acc= 0.05003 time= 15.93918
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 30000})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.73316 train_loss_parts= [0.7332, 0.0, 0.0001] link_pred_train_acc= 0.05003 time= 15.98119
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 29828, 2: 113, 1: 59})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.73316 train_loss_parts= [0.7332, 0.0, 0.0001] link_pred_train_acc= 0.05003 time= 15.95451
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 29992, 2: 8})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, -0.0, 0.0] link_pred_train_acc= 0.05003 time= 15.94883
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 30000})
+pre_train True
+kmeans purity, NMI: 0.17363333333333333 0.00044982712679180517
+Epoch: 0007 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, -0.0, 0.0] link_pred_train_acc= 0.05003 time= 17.56899
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 29999, 3: 1})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, 0.0, -0.0] link_pred_train_acc= 0.05003 time= 16.06733
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 29999, 3: 1})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, 0.0, -0.0] link_pred_train_acc= 0.05003 time= 15.90584
+z shape mu_c shape torch.Size([30000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({5: 30000})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.73318 train_loss_parts= [0.7332, 0.0, -0.0] link_pred_train_acc= 0.05003 time= 16.07987
+Optimization Finished!
+total time spend: 161.28502559661865
+gamma_c: [[0.16666667 0.16666667 0.16666667 0.16666664 0.16666667 0.16666667]
+ [0.16666667 0.16666667 0.16666667 0.16666664 0.16666667 0.16666667]
+ [0.16666667 0.16666667 0.16666667 0.16666664 0.16666667 0.16666667]
+ ...
+ [0.16666666 0.16666666 0.16666666 0.16666666 0.16666666 0.16666666]
+ [0.16666666 0.16666666 0.16666666 0.16666666 0.16666666 0.16666669]
+ [0.16666666 0.16666666 0.16666666 0.16666666 0.16666666 0.16666666]]
+gamma_c argmax: [0 0 0 ... 0 5 0]
+gamma_c argmax counter: Counter({0: 29984, 1: 9, 5: 5, 3: 2})
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Counter({0: 29984, 1: 9, 5: 5, 3: 2})
+label distribution for entropy
+true labels: [0.16833333333333333, 0.16393333333333332, 0.16506666666666667, 0.17143333333333333, 0.1634, 0.16783333333333333]
+pred labels: [0.9994666666666666, 0.0003, 0.0, 6.666666666666667e-05, 0.0, 0.00016666666666666666]
+Homogeneity:[0.0001]	 mean:0.0001	 std:0.0
+
+Completeness:[0.0449]	 mean:0.0449	 std:0.0
+
+V_measure_score:[0.0003]	 mean:0.0003	 std:0.0
+
+adjusted Rand Score:[-0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[-0.0001]	 mean:-0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0003]	 mean:0.0003	 std:0.0
+
+Purity:[0.1715]	 mean:0.1715	 std:0.0
+
+Accuracy:[0.1715]	 mean:0.1715	 std:0.0
+
+F1-score:[0.0487]	 mean:0.0487	 std:0.0
+
+precision_score:[0.1812]	 mean:0.1812	 std:0.0
+
+recall_score:[0.1683]	 mean:0.1683	 std:0.0
+
+entropy:[inf]	 mean:inf	 std:nan
+
+True label distribution:[4 1 1 ... 3 3 4]
+Counter({3: 5143, 0: 5050, 5: 5035, 2: 4952, 1: 4918, 4: 4902})
+Predicted label distribution:[0 0 0 ... 0 5 0]
+Counter({0: 29984, 1: 9, 5: 5, 3: 2})
+Using synthetic dataset
+dataset:synthetic_35000_0.1, node_num:35000,edge_num:61247986,attribute_num:1000
+imported graph edge number (without selfloop):30623993.0
+cluster number:6
+node size:35000, feature size:1000
+graph edge number after mask:30623993.0
+graph edge number after normalize adjacent matrix:30623993.0
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 33259, 4: 1741})
+Epoch: 0001 LR=0.0020 train_loss_total= 0.73427 train_loss_parts= [0.7343, -0.0001, 0.0006] link_pred_train_acc= 0.05003 time= 22.21049
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 32725, 1: 2275})
+Epoch: 0002 LR=0.0020 train_loss_total= 0.73420 train_loss_parts= [0.7342, -0.0001, 0.0008] link_pred_train_acc= 0.05003 time= 22.26642
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 34763, 1: 237})
+Epoch: 0003 LR=0.0020 train_loss_total= 0.73412 train_loss_parts= [0.7341, -0.0, 0.0002] link_pred_train_acc= 0.05003 time= 22.27463
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 34568, 5: 432})
+Epoch: 0004 LR=0.0020 train_loss_total= 0.73412 train_loss_parts= [0.7341, 0.0, 0.0004] link_pred_train_acc= 0.05003 time= 22.40040
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 34724, 5: 276})
+Epoch: 0005 LR=0.0020 train_loss_total= 0.73413 train_loss_parts= [0.7341, 0.0, 0.0003] link_pred_train_acc= 0.05003 time= 22.31921
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 34989, 5: 11})
+Epoch: 0006 LR=0.0020 train_loss_total= 0.73414 train_loss_parts= [0.7341, 0.0, 0.0001] link_pred_train_acc= 0.05003 time= 22.37814
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({2: 34778, 4: 222})
+pre_train True
+kmeans purity, NMI: 0.17182857142857144 0.0003580887601499188
+Epoch: 0007 LR=0.0020 train_loss_total= 0.73412 train_loss_parts= [0.7341, -0.0, 0.0002] link_pred_train_acc= 0.05003 time= 23.55971
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 32925, 2: 1655, 3: 312, 4: 77, 1: 18, 5: 13})
+Epoch: 0008 LR=0.0020 train_loss_total= 0.73381 train_loss_parts= [0.7341, -0.0, 0.0032] link_pred_train_acc= 0.05003 time= 22.26998
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 31860, 2: 2414, 3: 524, 4: 133, 1: 44, 5: 25})
+Epoch: 0009 LR=0.0020 train_loss_total= 0.73354 train_loss_parts= [0.7341, -0.0, 0.0058] link_pred_train_acc= 0.05003 time= 22.35211
+z shape mu_c shape torch.Size([35000, 32]) torch.Size([6, 32])
+Soft cluster assignment Counter({0: 30564, 2: 3283, 3: 783, 4: 246, 1: 66, 5: 58})
+Epoch: 0010 LR=0.0020 train_loss_total= 0.73320 train_loss_parts= [0.7341, -0.0001, 0.0095] link_pred_train_acc= 0.05003 time= 22.27180
+Optimization Finished!
+total time spend: 224.30303955078125
+gamma_c: [[0.37104237 0.01442063 0.34753275 0.20361915 0.05699298 0.00639215]
+ [0.37104237 0.01442063 0.34753275 0.20361915 0.05699298 0.00639215]
+ [0.37104237 0.01442063 0.34753275 0.20361915 0.05699298 0.00639215]
+ ...
+ [0.14902535 0.18154597 0.15057105 0.15455574 0.16374607 0.20055589]
+ [0.1442903  0.18544158 0.14617968 0.15109116 0.16258493 0.21041243]
+ [0.1462079  0.18392521 0.14797682 0.15255074 0.1631683  0.20617111]]
+gamma_c argmax: [0 0 0 ... 5 5 5]
+gamma_c argmax counter: Counter({0: 30564, 2: 3283, 3: 783, 4: 246, 1: 66, 5: 58})
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Counter({0: 30564, 2: 3283, 3: 783, 4: 246, 1: 66, 5: 58})
+label distribution for entropy
+true labels: [0.16651428571428573, 0.17054285714285713, 0.16645714285714286, 0.16537142857142856, 0.16682857142857144, 0.16428571428571428]
+pred labels: [0.8732571428571428, 0.0018857142857142857, 0.0938, 0.02237142857142857, 0.007028571428571428, 0.0016571428571428572]
+Homogeneity:[0.0003]	 mean:0.0003	 std:0.0
+
+Completeness:[0.001]	 mean:0.001	 std:0.0
+
+V_measure_score:[0.0004]	 mean:0.0004	 std:0.0
+
+adjusted Rand Score:[0.0]	 mean:0.0	 std:0.0
+
+adjusted Mutual Information:[0.0001]	 mean:0.0001	 std:0.0
+
+Normalized Mutual Information:[0.0004]	 mean:0.0004	 std:0.0
+
+Purity:[0.1731]	 mean:0.1731	 std:0.0
+
+Accuracy:[0.1728]	 mean:0.1728	 std:0.0
+
+F1-score:[0.0758]	 mean:0.0758	 std:0.0
+
+precision_score:[0.155]	 mean:0.155	 std:0.0
+
+recall_score:[0.1656]	 mean:0.1656	 std:0.0
+
+entropy:[2.2021]	 mean:2.2021	 std:0.0
+
+True label distribution:[2 1 4 ... 3 3 2]
+Counter({1: 5969, 4: 5839, 0: 5828, 2: 5826, 3: 5788, 5: 5750})
+Predicted label distribution:[0 0 0 ... 5 5 5]
+Counter({0: 30564, 2: 3283, 3: 783, 4: 246, 1: 66, 5: 58})
