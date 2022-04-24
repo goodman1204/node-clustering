@@ -261,6 +261,7 @@ def training(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_ae', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd")
+    parser.add_argument('--encoder', type=str, default='gcn', help="GNN as encoder")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--hidden1', type=int, default=64, help='Number of units in hidden layer 1.')
@@ -282,7 +283,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
         # torch.cuda.manual_seed(args.seed)
-    # random.seed(args.seed)
-    # np.random.seed(args.seed)
-    # torch.manual_seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
     training(args)

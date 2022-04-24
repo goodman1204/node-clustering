@@ -25,8 +25,18 @@ class GCNModelAE(nn.Module):
 
         self.device = device
         self.args = args
-        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
-        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+
+        if self.args.encoder == 'gcn':
+            self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+            self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+
+        if self.args.encoder == 'gat':
+            self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=5)
+            self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=5)
+            # self.gc3 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=5)
+
+        # self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+        # self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
         self.dc = InnerProductDecoder(dropout, act=lambda x: x)
         # self.dc = InnerDecoder(dropout, act=lambda x: x)
 
@@ -582,9 +592,16 @@ class GCNModelVAECE(nn.Module):
 
         self.args = args
         self.device = device
-        self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
-        self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
-        self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+
+        if self.args.encoder == 'gcn':
+            self.gc1 = GraphConvolutionSparse(input_feat_dim, hidden_dim1, dropout, act=torch.relu)
+            self.gc2 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+            self.gc3 = GraphConvolution(hidden_dim1, hidden_dim2, dropout, act=lambda x: x)
+
+        if self.args.encoder == 'gat':
+            self.gc1 = SpGAT(input_feat_dim,hidden_dim1,hidden_dim1,dropout,alpha=0.2,nheads=5)
+            self.gc2 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=5)
+            self.gc3 = SpGAT(hidden_dim1,hidden_dim2,hidden_dim2,dropout,alpha=0.2,nheads=5)
         # self.dc = InnerProductDecoder(dropout, act=lambda x: x)
         self.dc = InnerDecoder(dropout, act=lambda x: x) # should we use sigmoid
 

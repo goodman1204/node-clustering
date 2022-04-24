@@ -413,7 +413,7 @@ def save_results(args,metrics_list):
     wp = open('./result_logs/{}_{}_{}'.format(args.model,args.dataset,args.epochs),'a')
     wp.write("\n\n")
     if args.model =='gcn_vaece':
-        wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{},beta:{}, omega:{}, mutual_loss:{}, clustering_loss:{}, using kmeans:{}, coembedding:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed,args.beta,args.omega,args.mutual_loss, args.clustering_loss, args.kmeans, args.coembedding))
+        wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{},beta:{}, omega:{}, mutual_loss:{}, clustering_loss:{}, using kmeans:{}, coembedding:{}, encoder:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed,args.beta,args.omega,args.mutual_loss, args.clustering_loss, args.kmeans, args.coembedding,args.encoder))
     else:
         wp.write("hidden1:{},hidden2:{},learning_rate:{},epochs:{},seed:{}\n".format(args.hidden1,args.hidden2,args.lr,args.epochs,args.seed))
 

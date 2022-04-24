@@ -306,7 +306,7 @@ class SpGraphAttentionLayer(nn.Module):
         return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
 
 class SpGAT(nn.Module):
-    def __init__(self, nfeat, nhid, nclass, dropout, alpha = 0.2, nheads = 8):
+    def __init__(self, nfeat, nhid, nclass, dropout, alpha = 0.2, nheads = 3):
         """Sparse version of GAT."""
         super(SpGAT, self).__init__()
         self.dropout = dropout
@@ -335,7 +335,7 @@ class SpGAT(nn.Module):
         return x
 
 class GAT(nn.Module):
-    def __init__(self, nfeat, nhid, nclass, dropout, alpha=0.2, nheads = 8):
+    def __init__(self, nfeat, nhid, nclass, dropout, alpha=0.2, nheads = 3):
         """Dense version of GAT."""
         super(GAT, self).__init__()
         self.dropout = dropout

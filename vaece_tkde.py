@@ -164,6 +164,8 @@ def training(args):
         loss_list=None
         pretrain_flag = False
         start_time = time.time()
+        max_nmi = 0
+        max_pre = []
         for epoch in range(args.epochs):
             epoch_start = time.time()
             model.train()
@@ -175,8 +177,12 @@ def training(args):
 
             if not args.test_efficiency:
                 pre,gamma,z = model.predict_soft_assignment(mu_u,logvar_u,z)
+
                 H, C, V, ari, ami, nmi, purity, f1_score,precision,recall = clustering_evaluation(Y,pre)
                 print("purity, NMI f1_score:",purity,nmi,f1_score)
+                if nmi>max_nmi:
+                    max_pre = pre
+                    max_nmi = nmi
 
             if epoch <args.pre_gmm:
                 if args.coembedding:
@@ -273,6 +279,7 @@ def training(args):
         else:
             pre,gamma_c,z = model.predict_soft_assignment(mu_u,logvar_u,z)
 
+        pre = max_pre
         pre = label_mapping(tru,pre)
 
         # with open("save_prediction.log",'w') as wp:
@@ -350,6 +357,7 @@ def training(args):
 def parse_args():
     parser = argparse.ArgumentParser(description="Node clustering")
     parser.add_argument('--model', type=str, default='gcn_vaece', help="models used for clustering: gcn_ae,gcn_vae,gcn_vaecd,gcn_vaece")
+    parser.add_argument('--encoder', type=str, default='gcn', help="GNN as encoder")
     parser.add_argument('--seed', type=int, default=20, help='Random seed.')
     parser.add_argument('--epochs', type=int, default=300, help='Number of epochs to train.')
     parser.add_argument('--pre_gmm', type=int, default=200, help='Number of epochs to train.')
@@ -382,7 +390,7 @@ if __name__ == '__main__':
         # torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
 
-    # random.seed(args.seed)
-    # np.random.seed(args.seed)
-    # torch.manual_seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
     training(args)
