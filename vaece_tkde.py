@@ -65,11 +65,13 @@ def training(args):
     print("cluster number:{}".format(args.nClusters))
     assert(adj_init.shape[0]==n_nodes)
 
+    adj_orig = adj_init # save the original complete adj
+
     print("node size:{}, feature size:{}".format(n_nodes,n_features))
 
 
-    # adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj_init)
-    # fea_train, train_feas, val_feas, val_feas_false, test_feas, test_feas_false = mask_test_feas(features)
+    adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj_init)
+    fea_train, train_feas, val_feas, val_feas_false, test_feas, test_feas_false = mask_test_feas(features)
 
     features_orig = features
     features_label = torch.FloatTensor(features.toarray())
@@ -91,6 +93,7 @@ def training(args):
     embedding_attr_var_result_file = "result/AGAE_{}_a_sig.emb".format(args.dataset)
 
     # Some preprocessing, get the support matrix, D^{-1/2}\hat{A}D^{-1/2}
+    adj_init = adj_train # use partial adj for traing
     adj_norm = preprocess_graph(adj_init)
     print("graph edge number after normalize adjacent matrix:{}".format(adj_init.sum()/2))
 
@@ -119,6 +122,10 @@ def training(args):
     mean_recall = []
     mean_entropy = []
     mean_time= []
+    mean_roc_score = []
+    mean_roc_score_a = []
+    mean_ap_score = []
+    mean_ap_score_a = []
 
 
     # adj_norm = drop_edge(adj_norm,Y)
@@ -166,6 +173,12 @@ def training(args):
         start_time = time.time()
         max_nmi = 0
         max_pre = []
+
+        max_roc_score=0
+        max_ap_score=0
+        max_roc_score_a=0
+        max_ap_score_a=0
+
         for epoch in range(args.epochs):
             epoch_start = time.time()
             model.train()
@@ -239,10 +252,15 @@ def training(args):
 
 
             correct_prediction_u = ((torch.sigmoid(recovered_u.to('cpu'))>=0.5)==adj_label.type(torch.LongTensor))
-            # correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
+            correct_prediction_a = ((torch.sigmoid(recovered_a)>=0.5).type(torch.LongTensor)==features_label.type(torch.LongTensor)).type(torch.FloatTensor)
 
-            accuracy = torch.mean(correct_prediction_u*1.0)
+            accuracy_u = torch.mean(correct_prediction_u*1.0)
+            accuracy_a = torch.mean(correct_prediction_u*1.0)
 
+            hidden_emb_u = mu_u.detach().cpu().numpy()
+            hidden_emb_a = mu_a.detach().cpu().numpy()
+            roc_curr, ap_curr = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj_orig, val_edges, val_edges_false)
+            roc_curr_a, ap_curr_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, val_feas, val_feas_false)
 
             #clustering#############
             pre=[]
@@ -259,14 +277,37 @@ def training(args):
                   "train_loss_parts=", "{}".format([round(l.item(),4) for l in loss_list]),
                   "mutual dist loss=", "{:.5f}".format(args.beta*loss_list[5]),
                   "soft clustering loss=", "{:.5f}".format(args.omega*loss_list[6]),
-                  "link_pred_train_acc=", "{:.5f}".format(accuracy.item()))
+                  "link_pred_train_acc_u=", "{:.5f}".format(accuracy_u.item()),
+                  "link_pred_train_acc_a=", "{:.5f}".format(accuracy_a.item()),
                   # "KL_u=", "{:.5f}".format(KLD_u.item()),
                   # "KL_a=", "{:.5f}".format(KLD_a.item()),
                   # "yita_loss=", "{:.5f}".format(yita_loss.item()),
-                  # "val_edge_roc=", "{:.5f}".format(val_roc_score[-1]),
-                  # "val_edge_ap=", "{:.5f}".format(ap_curr),
-                  # "val_attr_roc=", "{:.5f}".format(roc_curr_a),
-                  # "val_attr_ap=", "{:.5f}".format(ap_curr_a),)
+                  "val_edge_roc=", "{:.5f}".format(roc_curr),
+                  "val_edge_ap=", "{:.5f}".format(ap_curr),
+                  "val_attr_roc=", "{:.5f}".format(roc_curr_a),
+                  "val_attr_ap=", "{:.5f}".format(ap_curr_a))
+
+            roc_score, ap_score = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj_orig, test_edges, test_edges_false)
+            roc_score_a, ap_score_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, test_feas, test_feas_false)
+
+
+            if max_roc_score < roc_score:
+                max_roc_score = roc_score
+
+            if max_ap_score < ap_score:
+                max_ap_score = ap_score
+
+            if max_roc_score_a < roc_score_a:
+                max_roc_score_a = roc_score_a
+
+            if max_ap_score_a < ap_score_a:
+                max_ap_score_a = ap_score_a
+
+            print('Test edge ROC score: ' + str(roc_score))
+            print('Test edge AP score: ' + str(ap_score))
+            print('Test attr ROC score: ' + str(roc_score_a))
+            print('Test attr AP score: ' + str(ap_score_a))
+
             print("epoch time=", "{:.5f}".format(time.time() - epoch_start))
 
         print("Optimization Finished!")
@@ -326,13 +367,16 @@ def training(args):
         # np.save(embedding_node_var_result_file, logvar_u.data.numpy())
         # np.save(embedding_attr_var_result_file, logvar_a.data.numpy())
 
-        # roc_score, ap_score = get_roc_score(np.dot(hidden_emb_u,hidden_emb_u.T), adj, test_edges, test_edges_false)
-        # roc_score_a, ap_score_a = get_roc_score(np.dot(hidden_emb_u,hidden_emb_a.T), features_orig, test_feas, test_feas_false)
+        mean_roc_score.append(max_roc_score)
+        mean_roc_score_a.append(max_roc_score_a)
+        mean_ap_score.append(max_ap_score)
+        mean_ap_score_a.append(max_ap_score_a)
 
-        # print('Test edge ROC score: ' + str(roc_score))
-        # print('Test edge AP score: ' + str(ap_score))
-        # print('Test attr ROC score: ' + str(roc_score_a))
-        # print('Test attr AP score: ' + str(ap_score_a))
+        print('Test edge ROC score: ' + str(max_roc_score))
+        print('Test edge AP score: ' + str(max_ap_score))
+        print('Test attr ROC score: ' + str(max_roc_score_a))
+        print('Test attr AP score: ' + str(max_ap_score_a))
+
     metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy,mean_time]
     save_results(args,metrics_list)
 
@@ -349,6 +393,11 @@ def training(args):
     print('precision_score:{}\t mean:{}\t std:{}\n'.format(mean_precision,round(np.mean(mean_precision),4),round(np.std(mean_precision),4)))
     print('recall_score:{}\t mean:{}\t std:{}\n'.format(mean_recall,round(np.mean(mean_recall),4),round(np.std(mean_recall),4)))
     print('entropy:{}\t mean:{}\t std:{}\n'.format(mean_entropy,round(np.mean(mean_entropy),4),round(np.std(mean_entropy),4)))
+    print('Test edge ROC score:{} \t mean:{} std:{} '.format(mean_roc_score,round(np.mean(mean_roc_score),4),round(np.std(mean_roc_score),4)))
+    print('Test edge AP score:{} \t mean:{} std:{} '.format(mean_ap_score,round(np.mean(mean_ap_score),4),round(np.std(mean_ap_score),4)))
+    print('Test attr ROC score:{} \t mean:{} std:{} '.format(mean_roc_score_a,round(np.mean(mean_roc_score_a),4),round(np.std(mean_roc_score_a),4)))
+    print('Test attr AP score:{} \t mean:{} std:{} '.format(mean_ap_score_a,round(np.mean(mean_ap_score_a),4),round(np.std(mean_ap_score_a),4)))
+
     # print("True label distribution:{}".format(tru))
     # print(Counter(tru))
     # print("Predicted label distribution:{}".format(pre))
@@ -390,7 +439,7 @@ if __name__ == '__main__':
         # torch.cuda.set_device(args.cuda)
         # torch.cuda.manual_seed(args.seed)
 
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    # random.seed(args.seed)
+    # np.random.seed(args.seed)
+    # torch.manual_seed(args.seed)
     training(args)
