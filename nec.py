@@ -249,7 +249,7 @@ def training(args):
         mean_entropy.append(round(entropy,4))
         mean_time.append(round(end_time-start_time,4))
 
-        # plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
+        plot_tsne(args.dataset,args.model,epoch,z.cpu(),model.mu_c.cpu(),tru,pre)
 
 
     # metrics_list=[mean_h,mean_c,mean_v,mean_ari,mean_ami,mean_nmi,mean_purity,mean_accuracy,mean_f1,mean_precision,mean_recall,mean_entropy]

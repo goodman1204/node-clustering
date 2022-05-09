@@ -3095,3 +3095,345 @@ time	54.6672	54.6672	0.0
 mean list for latex table
 'Nmi','purity','Ari','f1','precision','recall','entropy'
 0.3894 &0.5491 &0.303 &0.5257 &0.6377 &0.5484 &0.503 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5385	0.5385	0.0
+C	0.5156	0.5156	0.0
+V	0.5268	0.5268	0.0
+Ari	0.4675	0.4675	0.0
+Ami	0.5251	0.5251	0.0
+Nmi	0.5268	0.5268	0.0
+purity	0.6931	0.6931	0.0
+accuracy	0.6809	0.6809	0.0
+f1	0.696	0.696	0.0
+precision	0.7516	0.7516	0.0
+recall	0.6809	0.6809	0.0
+entropy	0.0811	0.0811	0.0
+time	17.1262	17.1262	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5268 &0.6931 &0.4675 &0.696 &0.7516 &0.6809 &0.0811 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5385	0.5385	0.0
+C	0.5156	0.5156	0.0
+V	0.5268	0.5268	0.0
+Ari	0.4675	0.4675	0.0
+Ami	0.5251	0.5251	0.0
+Nmi	0.5268	0.5268	0.0
+purity	0.6931	0.6931	0.0
+accuracy	0.6809	0.6809	0.0
+f1	0.696	0.696	0.0
+precision	0.7516	0.7516	0.0
+recall	0.6809	0.6809	0.0
+entropy	0.0811	0.0811	0.0
+time	17.5304	17.5304	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5268 &0.6931 &0.4675 &0.696 &0.7516 &0.6809 &0.0811 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5385	0.5385	0.0
+C	0.5156	0.5156	0.0
+V	0.5268	0.5268	0.0
+Ari	0.4675	0.4675	0.0
+Ami	0.5251	0.5251	0.0
+Nmi	0.5268	0.5268	0.0
+purity	0.6931	0.6931	0.0
+accuracy	0.6809	0.6809	0.0
+f1	0.696	0.696	0.0
+precision	0.7516	0.7516	0.0
+recall	0.6809	0.6809	0.0
+entropy	0.0811	0.0811	0.0
+time	17.6205	17.6205	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5268 &0.6931 &0.4675 &0.696 &0.7516 &0.6809 &0.0811 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5385	0.5385	0.0
+C	0.5156	0.5156	0.0
+V	0.5268	0.5268	0.0
+Ari	0.4675	0.4675	0.0
+Ami	0.5251	0.5251	0.0
+Nmi	0.5268	0.5268	0.0
+purity	0.6931	0.6931	0.0
+accuracy	0.6809	0.6809	0.0
+f1	0.696	0.696	0.0
+precision	0.7516	0.7516	0.0
+recall	0.6809	0.6809	0.0
+entropy	0.0811	0.0811	0.0
+time	17.7508	17.7508	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5268 &0.6931 &0.4675 &0.696 &0.7516 &0.6809 &0.0811 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5385	0.5385	0.0
+C	0.5156	0.5156	0.0
+V	0.5268	0.5268	0.0
+Ari	0.4675	0.4675	0.0
+Ami	0.5251	0.5251	0.0
+Nmi	0.5268	0.5268	0.0
+purity	0.6931	0.6931	0.0
+accuracy	0.6809	0.6809	0.0
+f1	0.696	0.696	0.0
+precision	0.7516	0.7516	0.0
+recall	0.6809	0.6809	0.0
+entropy	0.0811	0.0811	0.0
+time	17.2103	17.2103	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5268 &0.6931 &0.4675 &0.696 &0.7516 &0.6809 &0.0811 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5382	0.5382	0.0
+C	0.5153	0.5153	0.0
+V	0.5265	0.5265	0.0
+Ari	0.4649	0.4649	0.0
+Ami	0.5248	0.5248	0.0
+Nmi	0.5265	0.5265	0.0
+purity	0.6909	0.6909	0.0
+accuracy	0.6787	0.6787	0.0
+f1	0.6941	0.6941	0.0
+precision	0.7507	0.7507	0.0
+recall	0.6787	0.6787	0.0
+entropy	0.0823	0.0823	0.0
+time	124.6961	124.6961	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5265 &0.6909 &0.4649 &0.6941 &0.7507 &0.6787 &0.0823 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5276	0.5276	0.0
+C	0.5386	0.5386	0.0
+V	0.533	0.533	0.0
+Ari	0.4592	0.4592	0.0
+Ami	0.5313	0.5313	0.0
+Nmi	0.533	0.533	0.0
+purity	0.6905	0.6905	0.0
+accuracy	0.6905	0.6905	0.0
+f1	0.6967	0.6967	0.0
+precision	0.7476	0.7476	0.0
+recall	0.6905	0.6905	0.0
+entropy	0.0753	0.0753	0.0
+time	108.6137	108.6137	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.533 &0.6905 &0.4592 &0.6967 &0.7476 &0.6905 &0.0753 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4967	0.4967	0.0
+C	0.4796	0.4796	0.0
+V	0.488	0.488	0.0
+Ari	0.3569	0.3569	0.0
+Ami	0.4862	0.4862	0.0
+Nmi	0.488	0.488	0.0
+purity	0.6185	0.6185	0.0
+accuracy	0.503	0.503	0.0
+f1	0.5073	0.5073	0.0
+precision	0.5821	0.5821	0.0
+recall	0.503	0.503	0.0
+entropy	0.1157	0.1157	0.0
+time	129.1137	129.1137	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.488 &0.6185 &0.3569 &0.5073 &0.5821 &0.503 &0.1157 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4665	0.4665	0.0
+C	0.4529	0.4529	0.0
+V	0.4596	0.4596	0.0
+Ari	0.3785	0.3785	0.0
+Ami	0.4576	0.4576	0.0
+Nmi	0.4596	0.4596	0.0
+purity	0.671	0.671	0.0
+accuracy	0.6388	0.6388	0.0
+f1	0.6358	0.6358	0.0
+precision	0.6685	0.6685	0.0
+recall	0.6388	0.6388	0.0
+entropy	0.0538	0.0538	0.0
+time	202.0639	202.0639	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4596 &0.671 &0.3785 &0.6358 &0.6685 &0.6388 &0.0538 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.458	0.458	0.0
+C	0.4551	0.4551	0.0
+V	0.4566	0.4566	0.0
+Ari	0.3871	0.3871	0.0
+Ami	0.4546	0.4546	0.0
+Nmi	0.4566	0.4566	0.0
+purity	0.6499	0.6499	0.0
+accuracy	0.5949	0.5949	0.0
+f1	0.6103	0.6103	0.0
+precision	0.6659	0.6659	0.0
+recall	0.5949	0.5949	0.0
+entropy	0.0609	0.0609	0.0
+time	203.2516	203.2516	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4566 &0.6499 &0.3871 &0.6103 &0.6659 &0.5949 &0.0609 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.495	0.495	0.0
+C	0.4897	0.4897	0.0
+V	0.4923	0.4923	0.0
+Ari	0.4426	0.4426	0.0
+Ami	0.4905	0.4905	0.0
+Nmi	0.4923	0.4923	0.0
+purity	0.7031	0.7031	0.0
+accuracy	0.6702	0.6702	0.0
+f1	0.6696	0.6696	0.0
+precision	0.6905	0.6905	0.0
+recall	0.6702	0.6702	0.0
+entropy	0.0332	0.0332	0.0
+time	201.2445	201.2445	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4923 &0.7031 &0.4426 &0.6696 &0.6905 &0.6702 &0.0332 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.005,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.516	0.516	0.0
+C	0.4993	0.4993	0.0
+V	0.5075	0.5075	0.0
+Ari	0.4661	0.4661	0.0
+Ami	0.5057	0.5057	0.0
+Nmi	0.5075	0.5075	0.0
+purity	0.6806	0.6806	0.0
+accuracy	0.6507	0.6507	0.0
+f1	0.6594	0.6594	0.0
+precision	0.6895	0.6895	0.0
+recall	0.6507	0.6507	0.0
+entropy	0.033	0.033	0.0
+time	240.0485	240.0485	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5075 &0.6806 &0.4661 &0.6594 &0.6895 &0.6507 &0.033 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.446	0.446	0.0
+C	0.469	0.469	0.0
+V	0.4572	0.4572	0.0
+Ari	0.3589	0.3589	0.0
+Ami	0.4551	0.4551	0.0
+Nmi	0.4572	0.4572	0.0
+purity	0.6233	0.6233	0.0
+accuracy	0.6019	0.6019	0.0
+f1	0.5904	0.5904	0.0
+precision	0.6561	0.6561	0.0
+recall	0.6019	0.6019	0.0
+entropy	0.2883	0.2883	0.0
+time	244.5601	244.5601	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4572 &0.6233 &0.3589 &0.5904 &0.6561 &0.6019 &0.2883 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4699	0.4699	0.0
+C	0.4619	0.4619	0.0
+V	0.4659	0.4659	0.0
+Ari	0.4246	0.4246	0.0
+Ami	0.4639	0.4639	0.0
+Nmi	0.4659	0.4659	0.0
+purity	0.6747	0.6747	0.0
+accuracy	0.6595	0.6595	0.0
+f1	0.6654	0.6654	0.0
+precision	0.7007	0.7007	0.0
+recall	0.6595	0.6595	0.0
+entropy	0.072	0.072	0.0
+time	245.3398	245.3398	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4659 &0.6747 &0.4246 &0.6654 &0.7007 &0.6595 &0.072 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4879	0.4879	0.0
+C	0.4972	0.4972	0.0
+V	0.4925	0.4925	0.0
+Ari	0.4635	0.4635	0.0
+Ami	0.4906	0.4906	0.0
+Nmi	0.4925	0.4925	0.0
+purity	0.6828	0.6828	0.0
+accuracy	0.6728	0.6728	0.0
+f1	0.6768	0.6768	0.0
+precision	0.7175	0.7175	0.0
+recall	0.6728	0.6728	0.0
+entropy	0.0816	0.0816	0.0
+time	259.7393	259.7393	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4925 &0.6828 &0.4635 &0.6768 &0.7175 &0.6728 &0.0816 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4887	0.4887	0.0
+C	0.4706	0.4706	0.0
+V	0.4795	0.4795	0.0
+Ari	0.3543	0.3543	0.0
+Ami	0.4776	0.4776	0.0
+Nmi	0.4795	0.4795	0.0
+purity	0.6289	0.6289	0.0
+accuracy	0.5787	0.5787	0.0
+f1	0.5893	0.5893	0.0
+precision	0.6716	0.6716	0.0
+recall	0.5787	0.5787	0.0
+entropy	0.135	0.135	0.0
+time	252.3843	252.3843	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4795 &0.6289 &0.3543 &0.5893 &0.6716 &0.5787 &0.135 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.01,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.4477	0.4477	0.0
+C	0.4577	0.4577	0.0
+V	0.4526	0.4526	0.0
+Ari	0.4063	0.4063	0.0
+Ami	0.4506	0.4506	0.0
+Nmi	0.4526	0.4526	0.0
+purity	0.6285	0.6285	0.0
+accuracy	0.5934	0.5934	0.0
+f1	0.5923	0.5923	0.0
+precision	0.6184	0.6184	0.0
+recall	0.5934	0.5934	0.0
+entropy	0.1457	0.1457	0.0
+time	230.711	230.711	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.4526 &0.6285 &0.4063 &0.5923 &0.6184 &0.5934 &0.1457 &
+
+
+hidden1:64,hidden2:32,learning_rate:0.002,epochs:300,seed:20,beta:1, omega:1, mutual_loss:1, clustering_loss:1, using kmeans:0, coembedding:1, encoder:gcn
+H	0.5436	0.5436	0.0
+C	0.5235	0.5235	0.0
+V	0.5333	0.5333	0.0
+Ari	0.5061	0.5061	0.0
+Ami	0.5317	0.5317	0.0
+Nmi	0.5333	0.5333	0.0
+purity	0.7168	0.7168	0.0
+accuracy	0.7157	0.7157	0.0
+f1	0.7271	0.7271	0.0
+precision	0.7633	0.7633	0.0
+recall	0.7157	0.7157	0.0
+entropy	0.0488	0.0488	0.0
+time	205.6929	205.6929	0.0
+mean list for latex table
+'Nmi','purity','Ari','f1','precision','recall','entropy'
+0.5333 &0.7168 &0.5061 &0.7271 &0.7633 &0.7157 &0.0488 &

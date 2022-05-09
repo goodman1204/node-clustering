@@ -114,7 +114,7 @@ def training(args):
         # torch.manual_seed(args.seed)
 
         if args.model == 'kmeans':
-            model = KMeans(n_clusters=args.nClusters)
+            model = KMeans(n_clusters=args.nClusters,max_iter=500,random_state=40)
         elif args.model == "gmm":
             model = GaussianMixture(n_components=args.nClusters)
         elif args.model == 'sc':
