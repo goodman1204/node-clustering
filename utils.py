@@ -421,15 +421,15 @@ def save_results(args,metrics_list):
         wp.write("{}\t".format(metrics_name[index]))
         for value in metric:
             wp.write("{}\t".format(value))
-        wp.write("{}\t".format(round(np.mean(metric),4)))
-        wp.write("{}\n".format(round(np.std(metric),4)))
+        wp.write("{}\t".format(round(np.mean(metric),3)))
+        wp.write("{}\n".format(round(np.std(metric),3)))
 
     wp.write("mean list for latex table\n")
     wp.write("'Nmi','purity','Ari','f1','precision','recall','entropy'\n")
     for metric in ['Nmi','purity','Ari','f1','precision','recall','entropy']:
         for index, temp_metric in enumerate(metrics_name):
             if metric == temp_metric:
-                wp.write("{} &".format(round(np.mean(sorted(metrics_list[index],reverse=True)[0:10]),4)))
+                wp.write("{} &".format(round(np.mean(sorted(metrics_list[index],reverse=True)[0:10]),3)))
     wp.write("\n")
     wp.close()
 
